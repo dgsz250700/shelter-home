@@ -18,7 +18,7 @@ import {AdoptionMoment} from "./adoption-moment";
 import {MissionWelcome} from "./mission-welcome";
 import {PropTransparency} from "@/components/scene/refuge-prop";
 import {FreePractice} from "./free-practice";
-import {DAILY_CHANCES, nextCareReward, rewardCopy, careRecipient, RESCUE_DAYS, type PracticeMode, type CareReward} from "@/lib/engine/challenge";
+import {DAILY_CHANCES, nextCareReward, rewardCopy, careRecipient, type PracticeMode, type CareReward} from "@/lib/engine/challenge";
 import type {PracticeSession} from "@/lib/data/student";
 import { startMission } from "@/lib/data/actions";
 import { Practice } from "./practice";
@@ -65,7 +65,6 @@ export function RefugeClient({
   const [adoption,setAdoption]=useState<ShelterCat|null>(null);
   const residents=liveCats.filter(cat=>!cat.adoptedAt);
   const alumni=liveCats.filter(cat=>cat.adoptedAt);
-  const nextRescue=RESCUE_DAYS[liveCats.length];
   const nextReward=nextCareReward(liveStreak.total_days);
   const recipient=careRecipient(residents,nextReward);
   const [dates, setDates] = useState(practiceDates);
@@ -292,7 +291,7 @@ export function RefugeClient({
                 )}
               </section>
               <RescueProgress cats={liveCats} streak={liveStreak.current}/>
-              <details className="care-journey"><summary><Icon name="heart" size={18}/>{recipient?`Hoy cuidamos a ${recipient.name}`:'Tu primer rescate te espera'}</summary><div><p><b>Cada reto logrado:</b> comida, churu, juguetes, caja, camita, estambre o visita veterinaria.</p><p><b>Rescates:</b> {nextRescue?`próximo hito a los ${nextRescue} días de racha.`:'Ya alcanzaste todos los hitos de rescate.'} Hitos: 1, 3, 4… 10 días.</p><p><b>Un nuevo hogar:</b> un gato con tres cuidados puede ser adoptado al lograr 8/10 y acertar tres preguntas difíciles (nivel 2 o 3) sin pistas. Siempre queda compañía en el refugio.</p></div></details>
+              <p className="care-journey"><Icon name="heart" size={18}/>{recipient?`Hoy cuidamos a ${recipient.name}`:'Tu primer rescate te espera'}</p>
               <FreePractice skills={skills} busy={busy} onStart={(id,level)=>void begin("free",id,level)}/>
             </>
           )}
