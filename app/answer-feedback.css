@@ -1,0 +1,13 @@
+/* Answer feedback: green card + happy face when right, red shaking card + sad face when wrong. */
+.exercise-sheet.answer-flash-good,.is-playing .exercise-sheet.answer-flash-good{background:#e3f6e6;box-shadow:0 0 0 4px #3f9d55,0 20px 64px #09273d55}
+.exercise-sheet.answer-flash-bad,.is-playing .exercise-sheet.answer-flash-bad{background:#fbe4e1;box-shadow:0 0 0 4px #d24a3c,0 20px 64px #09273d55;animation:answer-shake .45s ease}
+.answer-face{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:1000;animation:answer-face-pop .35s cubic-bezier(.2,1.4,.4,1)}
+.answer-face svg{width:min(42vw,160px);height:auto;max-width:none;filter:drop-shadow(0 8px 18px #09273d33)}
+.answer-face circle:first-child{stroke-width:3}
+.answer-face.good circle:first-child{fill:#5cc16f;stroke:#2f7d42}
+.answer-face.bad circle:first-child{fill:#ef6b5c;stroke:#a7362b}
+.answer-face .eye{fill:#17394a}
+.answer-face path{fill:none;stroke:#17394a;stroke-width:4;stroke-linecap:round}
+@keyframes answer-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@keyframes answer-face-pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.exercise-sheet.answer-flash-bad,.is-playing .exercise-sheet.answer-flash-bad,.answer-face{animation:none}}

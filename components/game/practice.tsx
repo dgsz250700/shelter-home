@@ -8,7 +8,8 @@ import {expressionSymbols} from "@/lib/engine/algebra";
 
 import { useActiveTime } from "./use-active-time";
 import { ImageViewer } from "./image-viewer";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { completeMission, recordAttempt, finishQuestion } from "@/lib/data/actions";
 import { evaluate, exerciseFor } from "@/lib/engine/exercises";
 import { reinforce } from "@/lib/engine/selector";
@@ -48,6 +49,7 @@ export function Practice({
   const [solved, setSolved] = useState(currentAttempts.some(a=>a.correct));
   const [wrong, setWrong] = useState(currentAttempts.some(a=>!a.correct));
   const [review, setReview] = useState(false);
+  const [flash, setFlash] = useState<{kind:"good"|"bad";seed:string}|null>(null);
   const [result, setResult] = useState<Completion | null>(null);
   const [skillResults, setSkillResults] = useState<
     Record<string, { correct: number; total: number }>
@@ -164,6 +166,7 @@ export function Practice({
           total: (previous[skill.name]?.total ?? 0) + 1,
         },
       }));
+      setFlash({kind:evaluated.correct?"good":"bad",seed:exercise.seed});
       if (evaluated.correct) {
         if(!wrong)setCorrect((n) => n + 1);
         setSolved(true);
@@ -204,6 +207,15 @@ export function Practice({
     } catch {setMessage("Tu avance sigue aquí. Toca el botón de nuevo para guardarlo.");}
     finally {gate.current=false;setBusy(false);}
   };
+  const finishFlash = useEffectEvent((seed: string, good: boolean) => {
+    setFlash(null);
+    if (good && question?.seed === seed) void advance();
+  });
+  useEffect(() => {
+    if (!flash) return;
+    const timer = setTimeout(() => finishFlash(flash.seed, flash.kind === "good"), flash.kind === "good" ? 1200 : 900);
+    return () => clearTimeout(timer);
+  }, [flash]);
   if (result)
     return (
       <section className="exercise-sheet mission-complete">
@@ -261,7 +273,18 @@ export function Practice({
     .replace(/^(Balancea|Verifica y completa):?\s*/, "")
     .replace(/\. Escribe todos los coeficientes mínimos.*$/, "");
   return (
-    <section className={`exercise-sheet ${solved ? "answer-success" : ""}`}>
+    <section className={`exercise-sheet ${solved ? "answer-success" : ""} ${flash ? `answer-flash-${flash.kind}` : ""}`}>
+      {flash && createPortal(
+        <div key={`${flash.kind}:${flash.seed}`} className={`answer-face ${flash.kind}`} aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="96" height="96">
+            <circle cx="32" cy="32" r="29" />
+            <circle cx="22" cy="26" r="3.5" className="eye" />
+            <circle cx="42" cy="26" r="3.5" className="eye" />
+            <path d={flash.kind === "good" ? "M19 38q13 13 26 0" : "M19 46q13-12 26 0"} />
+          </svg>
+        </div>,
+        document.body,
+      )}
       <div className="exercise-meta">
         <span className={`subject subject-${skill.subject}`}>
           <Icon name="book" size={17} />
