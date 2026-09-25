@@ -3,7 +3,7 @@ import {access,chmod,readFile,writeFile} from 'node:fs/promises';
 import {hasCompleteCredentials,inspectSetup,parseCredentials,parseEnvText,upsertEnvText} from './setup-state.mjs';
 
 function run(command,args,input){
- const result=spawnSync(command,args,{stdio:input?['pipe','inherit','inherit']:'inherit',input,env:process.env});
+ const result=spawnSync(command,args,{stdio:input?['pipe','inherit','inherit']:'inherit',input,env:process.env,shell:process.platform==='win32'&&command==='pnpm'});
  if(result.status!==0)throw new Error(`${command} no completó la configuración.`);
 }
 async function exists(path){try{await access(path);return true}catch{return false}}
