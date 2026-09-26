@@ -10,6 +10,7 @@ import "./care-journey.css";
 import "./drive-library.css";
 import "./question-library.css";
 import "./answer-feedback.css";
+import "./clean-question.css";
 export const metadata: Metadata = {
   title: "Refugio",
   description: "Un lugar pequeño para crecer juntos.",
