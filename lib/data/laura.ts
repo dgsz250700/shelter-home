@@ -1,11 +1,11 @@
 import "server-only";
 import { studentClient } from "./student";
-import type { ShelterCat } from "./shelter";
+import type { ShelterCat, RewardStatus } from "./shelter";
 export async function openLauraShelter(): Promise<ShelterCat[]> {
   const { db, userId } = await studentClient();
   const { data, error } = await db
     .from("cat_unlocks")
-    .select("unlocked_at,adopted_at,care_count,admitted,cats(id,name,personality,story,palette,unlock_day)")
+    .select("unlocked_at,adopted_at,care_count,admitted,cats(id,slug,name,personality,story,palette,art_variant,pattern,expressions,accessories)")
     .eq("user_id", userId).eq("admitted",true);
   if (error) throw new Error("No pudimos cargar a los gatos.");
   return (data ?? []).flatMap((row) => {
@@ -17,8 +17,12 @@ export async function openLauraShelter(): Promise<ShelterCat[]> {
       return {
         adoptedAt:row.adopted_at as string|null,
         careCount:Number(row.care_count??0),
-        unlockDay:Number(c.unlock_day??1),
         id: String(c.id),
+        slug: String(c.slug),
+        variant: Number(c.art_variant ?? 0),
+        pattern: String(c.pattern ?? ""),
+        expressions: (c.expressions as string[] | null) ?? [],
+        accessories: (c.accessories as string[] | null) ?? [],
         name: String(c.name),
         story: String(c.story),
         personality: String(c.personality),
@@ -26,5 +30,11 @@ export async function openLauraShelter(): Promise<ShelterCat[]> {
         unlockedAt: String(row.unlocked_at),
       };
     });
-  }).sort((a,b)=>a.unlockDay-b.unlockDay);
+  }).sort((a,b)=>a.unlockedAt.localeCompare(b.unlockedAt));
+}
+export async function openRewardStatus(): Promise<RewardStatus> {
+  const { db } = await studentClient();
+  const { data, error } = await db.rpc("reward_status");
+  if (error) throw new Error("No pudimos cargar el progreso del refugio.");
+  return data as RewardStatus;
 }

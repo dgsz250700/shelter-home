@@ -13,7 +13,6 @@ export const rewardCopy: Record<CareReward, {title:string;delivered:string}> = {
   vet: {title:'Una visita a la veterinaria',delivered:'Vacuna del juego recibida. Un cuidado más para crecer fuerte.'},
 };
 export const CARE_CYCLE:readonly CareReward[]=['bed','food','box','treat','toy','yarn','vet'];
-export const RESCUE_DAYS=[1,3,4,5,6,7,8,9,10] as const;
 export function nextCareReward(totalDays:number):CareReward {
   return CARE_CYCLE[Math.max(0,Math.floor(totalDays)) % CARE_CYCLE.length];
 }
@@ -28,7 +27,4 @@ export function freeQueue(skill:Skill,level:Level,seed:string):Question[] {
 export function careRecipient<T extends {id:string;personality:string;careCount?:number;adoptedAt?:string|null}>(cats:T[],reward:CareReward):T|undefined {
  const preferred:Record<CareReward,string[]>={food:[],bed:['dormilón','tímido'],box:['curioso'],treat:['cariñoso','gruñón'],toy:['juguetón'],yarn:['juguetón','curioso'],vet:[]};
  return cats.filter(c=>!c.adoptedAt).sort((a,b)=>(a.careCount??0)-(b.careCount??0)||Number(preferred[reward].includes(b.personality))-Number(preferred[reward].includes(a.personality))||a.id.localeCompare(b.id))[0];
-}
-export function qualifiesForAdoption(firstAnswers:{correct:boolean;level:number;hint_level:number}[]):boolean {
- return firstAnswers.length===10&&firstAnswers.filter(a=>a.correct).length>=8&&firstAnswers.filter(a=>a.correct&&a.level>=3&&a.hint_level===0).length>=3;
 }

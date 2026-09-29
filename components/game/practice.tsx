@@ -224,10 +224,7 @@ export function Practice({
           <Icon name="star" size={44} />
           <Icon name="star" />
         </div>
-        <CatArt
-          body={result.cat?.palette.body}
-          belly={result.cat?.palette.belly}
-        />
+        <CatArt variant={result.cat?.variant}/>
         <h1>
           {result.cat
             ? `¡${result.cat.name} está en casa!`

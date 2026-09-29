@@ -410,6 +410,10 @@ progress::-moz-progress-bar {
   left: 43%;
   top: 66%;
 }
+.cat-6 {
+  left: 78%;
+  top: 57%;
+}
 .cat-art {
   display: block;
   width: 100%;
@@ -1444,6 +1448,10 @@ progress::-moz-progress-bar {
     left: 39%;
     top: 64%;
   }
+  .cat-6 {
+    left: 76%;
+    top: 60%;
+  }
   .room-cat > span {
     font-size: 10px;
     padding: 2px 8px;
@@ -1579,6 +1587,10 @@ progress::-moz-progress-bar {
   .room-compact .cat-5 {
     left: 40%;
     top: 94px;
+  }
+  .room-compact .cat-6 {
+    left: 78%;
+    top: 90px;
   }
   .room-compact .cat-story {
     padding: 12px 43px 12px 12px;

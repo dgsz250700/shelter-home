@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CatArt } from "@/components/scene/cat-art";
 import { Shelter } from "@/components/scene/shelter";
-import type { ShelterCat } from "@/lib/data/shelter";
+import type { ShelterCat, RewardStatus } from "@/lib/data/shelter";
 import type {
   Mastery,
   Skill,
@@ -29,6 +29,7 @@ import { SkillIcon } from "./skill-icon";
 
 export function RefugeClient({
   cats,
+  rewards,
   skills,
   queue,
   state,
@@ -40,6 +41,7 @@ export function RefugeClient({
   dailyTries,
 }: {
   cats: ShelterCat[];
+  rewards: RewardStatus;
   skills: Skill[];
   queue: Question[];
   state: ShelterState;
@@ -63,6 +65,7 @@ export function RefugeClient({
   const [tries,setTries]=useState(dailyTries);
   const [celebration,setCelebration]=useState<{reward:CareReward;id:string;catId?:string;catName?:string}|null>(null);
   const [adoption,setAdoption]=useState<ShelterCat|null>(null);
+  const [liveRewards,setLiveRewards]=useState(rewards);
   const residents=liveCats.filter(cat=>!cat.adoptedAt);
   const alumni=liveCats.filter(cat=>cat.adoptedAt);
   const nextReward=nextCareReward(liveStreak.total_days);
@@ -171,13 +174,13 @@ export function RefugeClient({
               {view === "cats" && (
                 <section className="collection">
                   <h2>Tu pequeña familia</h2>
-                  {liveCats.length===0&&<p>El primer reto logrado abre las puertas para Milo.</p>}
+                  {liveCats.length===0&&<p>El primer reto logrado abre las puertas del refugio.</p>}
                   <div className="cat-list">
                     {residents.map((cat) => (
-                      <article key={cat.id}><div className="family-portrait"><CatArt body={cat.palette.body} sleeping={cat.personality==="dormilón"}/></div><div className="family-story"><h3>{cat.name}</h3><span>{cat.personality}</span><p>{cat.story}</p><small>{cat.careCount??0} cuidados recibidos</small></div></article>
+                      <article key={cat.id}><div className="family-portrait"><CatArt variant={cat.variant} sleeping={cat.personality==="dormilón"}/></div><div className="family-story"><h3>{cat.name}</h3><span>{cat.personality}</span><p>{cat.story}</p><small>{cat.careCount??0} cuidados recibidos</small></div></article>
                     ))}
                   </div>
-                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="cat-list">{alumni.map(cat=><article key={cat.id}><div className="family-portrait"><CatArt body={cat.palette.body} belly={cat.palette.belly}/></div><div className="family-story"><h3>{cat.name}</h3><span>Adoptado el {new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'long',timeZone:'America/Bogota'}).format(new Date(cat.adoptedAt!))}</span><p>{cat.story}</p><small>Encontró un hogar gracias a tus retos y cuidados.</small></div></article>)}</div></div>}
+                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="cat-list">{alumni.map(cat=><article key={cat.id}><div className="family-portrait"><CatArt variant={cat.variant}/></div><div className="family-story"><h3>{cat.name}</h3><span>Adoptado el {new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'long',timeZone:'America/Bogota'}).format(new Date(cat.adoptedAt!))}</span><p>{cat.story}</p><small>Encontró un hogar gracias a tu constancia.</small></div></article>)}</div></div>}
                 </section>
               )}
               {view === "skills" && (
@@ -241,6 +244,7 @@ export function RefugeClient({
                 setLiveState(result.state);
                 if(result.reward)setCelebration({reward:result.reward,id:session.sessionId,catId:result.careCat?.id,catName:result.careCat?.name});
                 if(result.careCat)setLiveCats(previous=>previous.map(cat=>cat.id===result.careCat?.id?result.careCat:cat));
+                setLiveRewards(result.rewards);
                 if(result.adopted){setAdoption(result.adopted);setLiveCats(previous=>previous.map(cat=>cat.id===result.adopted?.id?result.adopted:cat));}
                 if (result.cat)
                   setLiveCats((previous) =>
@@ -290,7 +294,7 @@ export function RefugeClient({
                   <p>Activa una habilidad desde Admin para empezar.</p>
                 )}
               </section>
-              <RescueProgress cats={liveCats} streak={liveStreak.current}/>
+              <RescueProgress rewards={liveRewards}/>
               <p className="care-journey"><Icon name="heart" size={18}/>{recipient?`Hoy cuidamos a ${recipient.name}`:'Tu primer rescate te espera'}</p>
               <FreePractice skills={skills} busy={busy} onStart={(id,level)=>void begin("free",id,level)}/>
             </>

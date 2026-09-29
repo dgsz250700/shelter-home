@@ -121,3 +121,12 @@
 - Niveles del PDF 1–4 se presentan como 0–3 para mantener la convención de la app, explicándolo en admin. Una sesión nueva tiene diez preguntas progresivas de un banco.
 - La mezcla de opciones usa semillas v4; no altera las sesiones previas. Los valores canónicos A–D se conservan aunque cambie su posición visual.
 - No se modifica el arte del refugio. El material del día se destaca con una ficha compacta y las fórmulas ganan espacio dentro de las tarjetas existentes.
+
+## 2026-09-29 — Recompensas por racha: llegadas y adopciones
+
+- El refugio tiene capacidad para 7 gatos. Cada evento pide N días seguidos de reto diario logrado. Mientras el refugio no está lleno, el evento es una llegada: entra el siguiente gato del catálogo por `sort_order`. Con el refugio lleno, el evento es una adopción: sale un gato al azar de los residentes y se libera un espacio.
+- Romper la racha reinicia la cuenta hacia el siguiente evento, pero nunca quita gatos ni adopciones. El estado vive en `cat_unlocks` (residentes: `admitted` sin `adopted_at`; adoptados: con `adopted_at`) y en `reward_progress`. No se reconstruye a partir de `streaks.current`.
+- Los hitos se configuran en la fila única de `reward_rules`: `arrival_days` (7 valores, uno por llegada mientras se llena el refugio), `adoption_days` y `refill_days` (llegada para ocupar un espacio libre). Valores iniciales: 1,2,2,3,3,4,4 · adopción 5 · nueva llegada 3. Para ajustarlos basta un `update public.reward_rules set ... where id=1;`, sin desplegar código.
+- La lógica corre de forma atómica en `finish_mission_atomic`. `reward_status()` informa el próximo evento y la UI solo lo muestra. La práctica libre y los retos no logrados no suman.
+- El catálogo (`cats`) guarda identificadores estables (`slug`), la celda de arte, el patrón, las expresiones y los accesorios. El progreso solo guarda referencias. Hay 15 gatos y 6 ilustraciones, así que el arte se repite. Si se agota el catálogo, las llegadas esperan (`waiting`) hasta que se agreguen gatos.
+- La adopción ya no depende del desempeño ni de los cuidados. Los cuidados diarios se mantienen igual.

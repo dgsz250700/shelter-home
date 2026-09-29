@@ -57,16 +57,13 @@ export function Shelter({
         {cats.map((cat, index) => (
           <button
             key={cat.id} data-cat-id={cat.id} data-pose="idle"
-            className={`room-cat cat-${index % 6} personality-${cat.personality.normalize("NFD").replace(/[\u0300-\u036f]/g,"")} ${selected?.id === cat.id ? "patted" : ""}`}
+            className={`room-cat cat-${index % 7} personality-${cat.personality.normalize("NFD").replace(/[\u0300-\u036f]/g,"")} ${selected?.id === cat.id ? "patted" : ""}`}
             data-track={`cat_${cat.id}`} aria-label={`Conocer a ${cat.name}`}
             onClick={() => {
               setSelected(cat);
             }}
           >
-            <div className="cat-facing"><CatArt
-              body={cat.palette.body}
-              belly={cat.palette.belly}
-            /></div>
+            <div className="cat-facing"><CatArt variant={cat.variant}/></div>
             <i className="cat-reaction" aria-hidden="true"><Icon name="heart" size={20}/></i>
             <span>
               {cat.name}
@@ -89,7 +86,7 @@ export function Shelter({
           >
             <Icon name="close" />
           </button>
-          <div className="story-portrait"><CatArt body={selected.palette.body} belly={selected.palette.belly}/></div>
+          <div className="story-portrait"><CatArt variant={selected.variant}/></div>
           <strong>{selected.name} te saluda</strong>
           <span>{selected.personality}</span>
           <p>{selected.story}</p><p className="cat-wellbeing">{feedingUnlocked ? "El cuidado del refugio ya está listo por hoy." : "Espera tus cuidados de hoy. Logra el reto para ayudarle."}</p>{energy<100&&<small>Energía: {energy}/100. El reto logrado la recupera.</small>}

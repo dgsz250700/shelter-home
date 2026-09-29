@@ -8,9 +8,10 @@ const rigs = [
  {head:'polygon(23% 0,85% 0,86% 35%,69% 47%,36% 44%,23% 30%)',body:'polygon(30% 37%,80% 37%,78% 90%,21% 92%)',tail:'polygon(75% 62%,100% 62%,100% 93%,72% 94%)',pawY:83,eyes:[[42,27,12],[60,32,12]],fur:'#b69a75'},
  {head:'polygon(2% 8%,56% 8%,57% 47%,40% 59%,8% 57%,0 33%)',body:'polygon(31% 41%,84% 33%,92% 85%,55% 99%,12% 86%)',tail:'polygon(81% 15%,100% 15%,100% 80%,80% 80%)',pawY:78,eyes:[[29,43,-18],[44,34,-18]],fur:'#efc38d'},
 ];
-export function CatArt({body='#c79765',sleeping=false}:{body?:string;belly?:string;sleeping?:boolean}) {
+// variant is the catalog's art cell; body is only a fallback for callers without a catalog cat.
+export function CatArt({variant:catalogVariant,body='#c79765',sleeping=false}:{variant?:number;body?:string;belly?:string;sleeping?:boolean}) {
  const variants:Record<string,number>={'#c79765':0,'#8d9298':3,'#ddd8cb':2,'#756c66':4,'#e7a65a':5};
- const variant=variants[body]??1;
+ const variant=catalogVariant!==undefined&&rigs[catalogVariant]?catalogVariant:variants[body]??1;
  const rig=rigs[variant];
  const style={'--head-clip':rig.head,'--body-clip':rig.body,'--tail-clip':rig.tail,'--paw-y':`${rig.pawY}%`,'--fur':rig.fur,backgroundPosition:`${(variant%3)*50}% ${Math.floor(variant/3)*100}%`} as CSSProperties;
  return <div className={`cat-art illustrated-cat kitten-${variant} ${sleeping?'kitten-sleeping':''}`} aria-hidden="true" style={style}>

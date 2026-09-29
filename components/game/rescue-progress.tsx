@@ -1,11 +1,9 @@
-import type {ShelterCat} from '@/lib/data/shelter';
-import {RESCUE_DAYS} from '@/lib/engine/challenge';
+import type {RewardStatus} from '@/lib/data/shelter';
 import {Icon} from './icons';
-export function RescueProgress({cats,streak}:{cats:ShelterCat[];streak:number}){
- const target=RESCUE_DAYS[cats.length];
- const candidate=cats.filter(c=>!c.adoptedAt).sort((a,b)=>(b.careCount??0)-(a.careCount??0))[0];
+export function RescueProgress({rewards}:{rewards:RewardStatus}){
+ if(rewards.next==='waiting')return null;
+ const adoption=rewards.next==='adoption',left=Math.max(0,rewards.needed-rewards.progressDays);
  return <section className="rescue-progress" aria-label="Próximas recompensas">
- {target&&<div><Icon name="paw" size={20}/><div><span>Próximo rescate <b>{Math.min(streak,target)}/{target} días de racha</b></span><progress aria-label="Racha para el próximo rescate" value={Math.min(streak,target)} max={target}/><small>{Math.max(0,target-streak)} {target-streak===1?'día':'días'} para abrir otra puerta.</small></div></div>}
- {candidate&&<div className="rescue-home"><Icon name="home" size={20}/><div><span>Un hogar para {candidate.name}<b>{Math.min(candidate.careCount??0,3)}/3 cuidados</b></span><progress aria-label={`Cuidados de ${candidate.name}`} value={Math.min(candidate.careCount??0,3)} max={3}/></div></div>}
+ <div className={adoption?'rescue-home':undefined}><Icon name={adoption?'home':'paw'} size={20}/><div><span>{adoption?'Próxima adopción':'Próxima llegada'} <b>{rewards.progressDays}/{rewards.needed} días de racha</b></span><progress aria-label={adoption?'Racha para la próxima adopción':'Racha para la próxima llegada'} value={rewards.progressDays} max={rewards.needed}/><small>{left===1?'1 día seguido':`${left} días seguidos`} para {adoption?'que un gato encuentre hogar':rewards.residents+rewards.adopted===0?'que llegue tu primer gato':'que llegue otro gato'}.</small></div></div>
  </section>;
 }
