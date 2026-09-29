@@ -14,7 +14,8 @@
     "setup:doctor": "node scripts/setup-doctor.mjs",
     "setup:remote": "node --env-file=.env.local scripts/setup-remote.mjs",
     "setup:verify": "node --env-file=.env.local lib/data/verify-connection.mjs",
-    "setup:daniela": "pnpm setup:doctor && pnpm setup:remote && pnpm verify && pnpm exec vercel --prod --yes"
+    "setup:daniela": "pnpm setup:doctor && pnpm setup:remote && pnpm verify && pnpm exec vercel --prod --yes",
+    "admin:password": "node --env-file=.env.local scripts/change-admin-password.mjs"
   },
   "dependencies": {
     "@react-three/drei": "10.7.8",

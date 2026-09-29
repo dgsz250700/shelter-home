@@ -15,7 +15,7 @@ Al terminar tendrás:
 - un Supabase exclusivo bajo tu cuenta;
 - un Vercel exclusivo conectado a tu GitHub;
 - producción online;
-- acceso de Laura y acceso `admin` del tutor;
+- acceso de Laura y acceso `maracuya` del tutor;
 - verificaciones automáticas para seguir vibecodeando sin romper producción.
 
 ## Qué te pedirá el agente
@@ -67,7 +67,7 @@ pnpm dev
 El instalador crea dos usuarios y guarda sus contraseñas en `.env.credentials.json`:
 
 - `student`: lo usa el servidor para abrir el refugio de Laura;
-- `tutor`: permite entrar por `/auth`; en la pantalla se escribe el usuario `admin` y la contraseña del tutor.
+- `tutor`: permite entrar por `/auth`; en la pantalla se escribe el usuario `maracuya` y la contraseña del tutor.
 
 Ese archivo está fuera de Git. Al finalizar, guarda ambas credenciales en tu gestor de contraseñas. No compartas el archivo por chat, correo ni commits.
 
