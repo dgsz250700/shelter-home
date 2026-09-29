@@ -6,6 +6,14 @@ Admin → **Banco de Drive** → Conectar mi cuenta de Google → elegir la cuen
 
 Cada PDF se convierte en una microhabilidad con el nombre del archivo. Las prácticas nuevas priorizan los bancos activos de Drive: **una microhabilidad por día, exactamente diez preguntas**, con niveles internos 1,1,1,2,2,2,3,3,4,4 (en pantalla 0–3). La selección se mezcla por sesión sin repetir preguntas cuando se cumplen los mínimos. Un tema ya empezado ese día se conserva. Se mantienen las tres oportunidades diarias existentes.
 
+## Modo carpeta compartida por enlace (activo)
+
+Refugio lee la carpeta **Banco Preguntas Refugio** sin credenciales de Google: `GOOGLE_DRIVE_PUBLIC_FOLDER_ID` en Vercel (solo servidor). La carpeta debe estar compartida como «Cualquier persona con el enlace · Lector». Admin → Banco de Drive muestra los PDF; Importar y revisar → Activar sigue igual (requiere `DEEPSEEK_API_KEY`).
+
+- Cualquiera con el enlace puede ver las preguntas y el solucionario: no compartir el enlace con Laura.
+- Usa la vista embebida y la descarga públicas de Google, no documentadas; si dejan de funcionar, la pantalla muestra un error y se puede pasar a OAuth o cuenta de servicio.
+- Solo se listan PDF de la carpeta (no subcarpetas); la carpeta se cambia desde Vercel, no desde la app. Si hay cuenta de servicio configurada, esta tiene prioridad.
+
 ## Activación inicial de Google (una vez, administrador técnico)
 
 1. En Google Cloud habilitar **Google Drive API**. Configurar Google Auth Platform y un cliente OAuth **Web application**. Añadir Daniela como usuaria de prueba si el proyecto está en Testing. Redirect URI exacta: `https://animals-dani.vercel.app/api/tutor/drive/callback`.

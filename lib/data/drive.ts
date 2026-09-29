@@ -11,6 +11,43 @@ function configuration(){
  if(!c.client_email||!c.private_key||!/^[\w-]+$/.test(folder))throw new Error('Revisa la configuración privada de Drive.');
  return {credentials:{client_email:c.client_email,private_key:c.private_key},folder};
 }
+type DriveFile={id:string;name:string;size:string;modifiedTime:string};
+// Carpeta compartida como «Cualquier persona con el enlace»: se lee sin credenciales de Google.
+function publicFolder(){
+ const folder=process.env.GOOGLE_DRIVE_PUBLIC_FOLDER_ID?.trim();
+ if(!folder)return null;
+ if(!/^[\w-]{10,200}$/.test(folder))throw new Error('Revisa la carpeta compartida de Drive.');
+ return folder;
+}
+const unescape=(s:string)=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').trim();
+const publicDownload=(id:string)=>`https://drive.usercontent.google.com/download?id=${id}&export=download`;
+async function publicFiles(folder:string){
+ const response=await fetch(`https://drive.google.com/embeddedfolderview?id=${folder}`,{cache:'no-store',signal:AbortSignal.timeout(15000)});
+ const html=response.ok?await response.text():'';
+ if(!html.includes('class="flip-entries"'))throw new Error('No pudimos abrir la carpeta. Comprueba que esté compartida como «Cualquier persona con el enlace».');
+ const folderName=unescape(html.match(/<title>([^<]*)<\/title>/)?.[1]??'')||'Banco de preguntas';
+ const entries=html.split('<div class="flip-entry" ').slice(1).flatMap(chunk=>{
+  const id=chunk.match(/^id="entry-([\w-]{5,200})"/)?.[1],name=chunk.match(/<div class="flip-entry-title">([^<]*)<\/div>/)?.[1];
+  return id&&name&&chunk.includes('/type/application/pdf"')?[{id,name:unescape(name)}]:[];
+ }).slice(0,100);
+ const files=await Promise.all(entries.map(async ({id,name}):Promise<DriveFile|null>=>{
+  const head=await fetch(publicDownload(id),{method:'HEAD',cache:'no-store',signal:AbortSignal.timeout(15000)}).catch(()=>null);
+  const modified=head?.headers.get('last-modified'),size=head?.headers.get('content-length');
+  if(!head?.ok||head.headers.get('content-type')?.includes('text/html')||!modified||!size)return null;
+  return {id,name,size,modifiedTime:new Date(modified).toISOString()};
+ }));
+ return {folderName,files:files.filter((f):f is DriveFile=>Boolean(f)).sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime))};
+}
+async function publicBank(folder:string,fileId?:string){
+ const {folderName,files}=await publicFiles(folder);
+ if(!fileId)return {configured:true as const,managed:true as const,files,folder,folderName,email:undefined};
+ if(!/^[\w-]{5,200}$/.test(fileId))throw new Error('Archivo inválido.');
+ const file=files.find(f=>f.id===fileId);
+ if(!file||Number(file.size)>15*1024*1024)throw new Error('Elige un PDF de la carpeta conectada, de hasta 15 MB.');
+ const response=await fetch(publicDownload(fileId),{cache:'no-store',signal:AbortSignal.timeout(30000)});
+ if(!response.ok||response.headers.get('content-type')?.includes('text/html'))throw new Error('Drive no pudo entregar el PDF. Reintenta.');
+ return {configured:true as const,response,name:file.name,folder};
+}
 async function access(){
  await tutorDatabase();
  const service=configuration();
@@ -25,6 +62,7 @@ async function access(){
  return {headers:{Authorization:`Bearer ${token}`},folder:connection.folder_id,folderName:connection.folder_name,email:undefined};
 }
 export async function setDriveFolder(value:string){
+ if(publicFolder())throw new Error('Esta carpeta se administra mediante la configuración del servidor.');
  const folder=driveFolderId(value),config=await access();if(!config)throw new Error('Conecta Google antes de elegir la carpeta.');
  if(configuration())throw new Error('Esta carpeta se administra mediante la configuración del servidor.');
  const response=await fetch(`https://www.googleapis.com/drive/v3/files/${folder}?fields=id,name,mimeType,trashed`,{headers:config.headers,cache:'no-store',signal:AbortSignal.timeout(15000)});
@@ -37,6 +75,8 @@ export async function setDriveFolder(value:string){
  return {folder,name:file.name};
 }
 export async function driveBank(fileId?:string){
+ const shared=configuration()?null:publicFolder();
+ if(shared){await tutorDatabase();return publicBank(shared,fileId);}
  const config=await access();if(!config)return {configured:false as const,oauthReady:driveOAuthReady()};
  if(!config.folder)return {configured:true as const,needsFolder:true as const,files:[]};
  const {headers}=config;
@@ -59,5 +99,5 @@ export async function driveBank(fileId?:string){
   const data=await response.json() as {files:typeof files;nextPageToken?:string};files.push(...data.files);
   if(!data.nextPageToken)break;params.set('pageToken',data.nextPageToken);
  }while(files.length<500);
- return {configured:true as const,files:files.slice(0,500),folder:config.folder,folderName:config.folderName,email:config.email};
+ return {configured:true as const,managed:Boolean(configuration()),files:files.slice(0,500),folder:config.folder,folderName:config.folderName,email:config.email};
 }
