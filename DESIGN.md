@@ -119,7 +119,7 @@ Las esquinas suaves distinguen controles compactos, paneles y escenario según l
 - **Estados de habilidad:** etiquetas compactas Activa/Pausada con texto explícito y tonos diferenciados.
 - **Paneles y preguntas:** papel claro, bordes suaves, preguntas desplegables y vista de ensayo separada con fondo cálido.
 - **Numa:** imagen transparente local, conversación en párrafos legibles y versión compacta dentro del ejercicio. La memoria tiene acceso explícito para revisión.
-- **Arte del refugio:** `public/art/refuge-courtyard.webp`, `numa.webp` y `rescue-kittens.webp`; cada archivo tiene un JSON adyacente con prompt y procedencia. El modelo exacto no está expuesto por la herramienta integrada y no se atribuye a una versión nominal.
+- **Arte del refugio:** `public/art/refuge-courtyard.webp` y `numa.webp`; cada archivo tiene un JSON adyacente con prompt y procedencia. El modelo exacto no está expuesto por la herramienta integrada y no se atribuye a una versión nominal. Los gatos del refugio se dibujan en SVG a partir de sus rasgos y personalidad (`components/scene/cat-figure.tsx`).
 
 ## Do's and Don'ts
 

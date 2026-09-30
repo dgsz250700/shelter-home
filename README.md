@@ -61,7 +61,7 @@ Arte original generado con la herramienta integrada de OpenAI, optimizado como W
 
 - `public/art/refuge-courtyard.webp` y `refuge-courtyard.webp.json`: patio del refugio, 1536 × 1024.
 - `public/art/numa.webp` y `numa.webp.json`: Numa con transparencia.
-- `public/art/rescue-kittens.webp` y `rescue-kittens.webp.json`: seis gatos recortables con transparencia.
+- `components/scene/cat-figure.tsx`: gatos en SVG dibujados según tamaño, cuerpo, pelaje, cola, orejas y personalidad del catálogo.
 
 Las animaciones de cuidado, gatos y ambiente respetan la preferencia de movimiento reducido del sistema y el control dentro del refugio. No se ha medido 60 FPS en un móvil físico.
 
