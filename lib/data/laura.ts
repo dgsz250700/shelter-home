@@ -5,7 +5,7 @@ export async function openLauraShelter(): Promise<ShelterCat[]> {
   const { db, userId } = await studentClient();
   const { data, error } = await db
     .from("cat_unlocks")
-    .select("unlocked_at,adopted_at,care_count,admitted,cats(id,slug,name,personality,story,palette,art_variant,pattern,expressions,accessories)")
+    .select("unlocked_at,adopted_at,care_count,admitted,cats(id,slug,name,personality,story,palette,size,build,coat,tail,ears,pattern,accessories)")
     .eq("user_id", userId).eq("admitted",true);
   if (error) throw new Error("No pudimos cargar a los gatos.");
   return (data ?? []).flatMap((row) => {
@@ -19,9 +19,12 @@ export async function openLauraShelter(): Promise<ShelterCat[]> {
         careCount:Number(row.care_count??0),
         id: String(c.id),
         slug: String(c.slug),
-        variant: Number(c.art_variant ?? 0),
+        size: c.size as ShelterCat["size"],
+        build: c.build as ShelterCat["build"],
+        coat: c.coat as ShelterCat["coat"],
+        tail: c.tail as ShelterCat["tail"],
+        ears: c.ears as ShelterCat["ears"],
         pattern: String(c.pattern ?? ""),
-        expressions: (c.expressions as string[] | null) ?? [],
         accessories: (c.accessories as string[] | null) ?? [],
         name: String(c.name),
         story: String(c.story),

@@ -224,7 +224,7 @@ export function Practice({
           <Icon name="star" size={44} />
           <Icon name="star" />
         </div>
-        <CatArt variant={result.cat?.variant}/>
+        <CatArt cat={result.cat??undefined}/>
         <h1>
           {result.cat
             ? `¡${result.cat.name} está en casa!`

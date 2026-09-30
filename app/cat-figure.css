@@ -1,0 +1,32 @@
+/* Vector cats: pose layers switch with the resident's activity. */
+.cat-figure{display:block;width:100%;height:auto;aspect-ratio:1;overflow:visible}
+.cat-figure .pose-walk,.cat-figure .pose-sleep{display:none}
+[data-pose=walk] .cat-figure .pose-base,[data-pose=sleep] .cat-figure .pose-base{display:none}
+[data-pose=walk] .cat-figure .pose-walk,[data-pose=sleep] .cat-figure .pose-sleep{display:inline}
+.cat-figure g{transform-box:fill-box}
+.cat-figure .cat-body{transform-origin:50% 100%;animation:figure-breathe 3.6s ease-in-out infinite}
+.cat-figure .cat-head{transform-origin:50% 90%;animation:figure-look 8s ease-in-out infinite}
+.cat-figure .cat-tail{transform-origin:0% 100%;animation:figure-tail 3.2s ease-in-out infinite}
+.cat-figure[data-personality=dormilón] .cat-head,[data-pose=sleep] .cat-figure .cat-head{animation:figure-breathe 5s ease-in-out infinite}
+.cat-figure[data-personality=travieso] .pose-base .cat-body{animation:figure-wiggle 1.6s ease-in-out infinite}
+.cat-figure[data-personality=asustadizo] .pose-base .cat-body{animation:figure-shiver 2.4s ease-in-out infinite}
+.cat-figure[data-personality=loquito] .pose-base .cat-legs{transform-origin:50% 100%;animation:figure-kick .9s ease-in-out infinite alternate}
+.cat-figure .cat-zzz{animation:figure-zzz 3s ease-in-out infinite}
+.cat-figure .cat-butterfly{animation:figure-flutter 2.6s ease-in-out infinite}
+[data-pose=walk] .cat-figure .cat-leg-a{transform-origin:50% 0;animation:figure-stride .42s ease-in-out infinite alternate}
+[data-pose=walk] .cat-figure .cat-leg-b{transform-origin:50% 0;animation:figure-stride .42s ease-in-out -.21s infinite alternate}
+[data-pose=play] .cat-figure .pose-base{animation:figure-hop .7s ease-in-out infinite alternate}
+[data-pose=happy] .cat-figure .cat-head,[data-pose=social] .cat-figure .cat-head{animation:figure-nuzzle 1.6s ease-in-out infinite}
+@keyframes figure-breathe{50%{transform:scale(1.015,1.03)}}
+@keyframes figure-look{0%,25%,100%{transform:rotate(0)}40%,52%{transform:rotate(-5deg)}70%,82%{transform:rotate(4deg)}}
+@keyframes figure-tail{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(6deg)}}
+@keyframes figure-wiggle{0%,100%{transform:translateX(0)}25%{transform:translateX(-1.5px)}75%{transform:translateX(1.5px)}}
+@keyframes figure-shiver{0%,40%,100%{transform:translateX(0)}45%,55%{transform:translateX(-1px)}50%,60%{transform:translateX(1px)}}
+@keyframes figure-kick{to{transform:translateY(-3px) rotate(2deg)}}
+@keyframes figure-zzz{0%,100%{opacity:.2;transform:translateY(2px)}50%{opacity:1;transform:translateY(-3px)}}
+@keyframes figure-flutter{0%,100%{transform:translate(0,0) scaleX(1)}50%{transform:translate(-6px,4px) scaleX(.6)}}
+@keyframes figure-stride{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
+@keyframes figure-hop{to{transform:translateY(-6px)}}
+@keyframes figure-nuzzle{50%{transform:rotate(-9deg)}}
+@media(prefers-reduced-motion:reduce){.cat-figure *{animation:none!important}}
+[data-motion=off] .cat-figure *{animation-play-state:paused!important}

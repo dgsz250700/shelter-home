@@ -8,6 +8,7 @@ import "./learning-visuals.css";
 import "./admin-creation.css";
 import "./care-journey.css";
 import "./drive-library.css";
+import "./cat-figure.css";
 import "./question-library.css";
 import "./answer-feedback.css";
 import "./clean-question.css";

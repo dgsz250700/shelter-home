@@ -63,7 +63,7 @@ export function Shelter({
               setSelected(cat);
             }}
           >
-            <div className="cat-facing"><CatArt variant={cat.variant}/></div>
+            <div className="cat-facing"><CatArt cat={cat}/></div>
             <i className="cat-reaction" aria-hidden="true"><Icon name="heart" size={20}/></i>
             <span>
               {cat.name}
@@ -86,7 +86,7 @@ export function Shelter({
           >
             <Icon name="close" />
           </button>
-          <div className="story-portrait"><CatArt variant={selected.variant}/></div>
+          <div className="story-portrait"><CatArt cat={selected}/></div>
           <strong>{selected.name} te saluda</strong>
           <span>{selected.personality}</span>
           <p>{selected.story}</p><p className="cat-wellbeing">{feedingUnlocked ? "El cuidado del refugio ya está listo por hoy." : "Espera tus cuidados de hoy. Logra el reto para ayudarle."}</p>{energy<100&&<small>Energía: {energy}/100. El reto logrado la recupera.</small>}

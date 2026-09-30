@@ -130,3 +130,10 @@
 - La lógica corre de forma atómica en `finish_mission_atomic`. `reward_status()` informa el próximo evento y la UI solo lo muestra. La práctica libre y los retos no logrados no suman.
 - El catálogo (`cats`) guarda identificadores estables (`slug`), la celda de arte, el patrón, las expresiones y los accesorios. El progreso solo guarda referencias. Hay 15 gatos y 6 ilustraciones, así que el arte se repite. Si se agota el catálogo, las llegadas esperan (`waiting`) hasta que se agreguen gatos.
 - La adopción ya no depende del desempeño ni de los cuidados. Los cuidados diarios se mantienen igual.
+
+## 2026-09-30 — Gatos dibujados por rasgos y personalidad
+
+- Los gatos se dibujan en SVG a partir de sus rasgos en `cats`: tamaño (small/medium/large), cuerpo (slim/normal/chubby), pelaje (short/fluffy), cola (thin/normal/fluffy), orejas (small/normal/large), patrón (liso/atigrado/bicolor/ahumado), colores y accesorios (moño, cascabel, pañuelo).
+- La personalidad decide la pose base y la expresión (`lib/engine/cat-look.ts`): gruñón mira de reojo con el ceño fruncido; dormilón duerme hecho bolita; cariñoso se sienta con la cola alrededor; travieso está listo para saltar; asustadizo se agacha con ojos grandes; curioso inclina la cabeza hacia una mariposa; elegante se sienta erguido; loquito juega patas arriba. No se guardan expresiones en la base de datos.
+- En el patio, cada gato cambia a una pose de caminar o de dormir según lo que esté haciendo, y vuelve a su pose de personalidad al quedarse quieto.
+- Reemplaza la ilustración pintada de 6 gatitos (`rescue-kittens.webp`), que no permitía variar rasgos. Personalidades anteriores: tímido → asustadizo, juguetón → travieso.

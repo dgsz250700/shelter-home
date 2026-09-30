@@ -4,33 +4,6 @@
 .cat-facing{transform:scaleX(var(--facing,1));transform-origin:center 80%}
 .illustrated-cat{filter:none;animation:none;background-image:none!important;position:relative}
 .illustrated-cat>span {animation:none;background-position:inherit}
-.illustrated-cat .kitten-body{mask-image:linear-gradient(to bottom,#000 0 calc(var(--paw-y) + 1%),transparent calc(var(--paw-y) + 1%));clip-path:var(--body-clip);transform-origin:50% 85%;animation:cat-breath 3.4s ease-in-out infinite}
-.illustrated-cat .kitten-head{clip-path:var(--head-clip);transform-origin:52% 47%;animation:cat-look 7s ease-in-out infinite}
-.illustrated-cat .kitten-tail{clip-path:var(--tail-clip);transform-origin:30% 76%;animation:cat-tail-swish 3.2s ease-in-out infinite}
-.illustrated-cat .kitten-paw{clip-path:polygon(0 var(--paw-y),50% var(--paw-y),50% 100%,0 100%);transform-origin:43% 83%}
-.illustrated-cat .kitten-paw-right{clip-path:polygon(50% var(--paw-y),100% var(--paw-y),100% 100%,50% 100%);transform-origin:64% 83%}
-.kitten-eyelid{position:absolute;width:10%;height:10%;border-radius:50%;background:var(--fur);transform:translate(-50%,-50%) scaleY(0);transform-origin:center;animation:cat-blink 5.6s infinite}
-.kitten-eyelid:after{content:'';position:absolute;left:15%;right:15%;top:45%;height:15%;border-radius:50%;background:#493a2e}
-.kitten-1 .kitten-eyelid,.kitten-3 .kitten-eyelid{animation-delay:-2.7s}
-.kitten-2 .kitten-eyelid{animation-delay:-4s}
-[data-pose=walk] .kitten-body{animation:cat-trot-body .42s ease-in-out infinite}
-[data-pose=walk] .kitten-head{animation:cat-trot-head .42s ease-in-out infinite}
-[data-pose=walk] .kitten-paw-left{animation:cat-stride .42s ease-in-out infinite}
-[data-pose=walk] .kitten-paw-right{animation:cat-stride .42s ease-in-out -.21s infinite}
-[data-pose=play] .kitten-body{animation:cat-pounce 1.4s ease-in-out infinite}
-[data-pose=play] .kitten-head{animation:cat-curious 1.4s ease-in-out infinite}
-[data-pose=play] .kitten-paw-left{animation:cat-bat 1.4s ease-in-out infinite}
-[data-pose=play] .kitten-tail{animation:cat-tail-swish .7s ease-in-out infinite}
-[data-pose=groom] .kitten-head,[data-pose=eat] .kitten-head{animation:cat-groom 1.2s ease-in-out infinite}
-[data-pose=groom] .kitten-paw-right{animation:cat-wash 1.2s ease-in-out infinite}
-[data-pose=stretch] .kitten-body{animation:cat-stretch 3s ease-in-out infinite}
-[data-pose=stretch] .kitten-paw-left{animation:cat-reach 3s ease-in-out infinite}
-[data-pose=sleep] .illustrated-cat{transform:translateY(7%) scale(1.1,.82);transform-origin:center bottom}
-[data-pose=sleep] .kitten-head,.kitten-sleeping .kitten-head{animation:cat-breath 5s ease-in-out infinite}
-[data-pose=sleep] .kitten-eyelid,.kitten-sleeping .kitten-eyelid{animation:none;transform:translate(-50%,-50%) scaleY(1)}
-[data-pose=social] .kitten-head,[data-pose=happy] .kitten-head{animation:cat-nuzzle 1.6s ease-in-out infinite}
-[data-pose=social] .kitten-eyelid,[data-pose=happy] .kitten-eyelid{animation:cat-content 2s ease-in-out infinite}
-[data-pose=happy] .kitten-paw-left{animation:cat-bat 1.1s ease-in-out infinite}
 .cat-reaction{position:absolute;top:3%;right:8%;display:none;color:#c64825;pointer-events:none}
 [data-pose=social] .cat-reaction,[data-pose=happy] .cat-reaction{display:block;animation:cat-affection 2s ease-out infinite}
 .refuge-greeting{position:absolute;z-index:2;top:22px;left:26px;right:20px;color:white;pointer-events:none;text-shadow:0 2px 5px #123a42,0 1px 12px #123a42}
@@ -87,4 +60,4 @@
 [data-motion=off] .room-cat *,[data-motion=off] .cat-ball{animation-play-state:paused!important}
 @media(max-width:1000px){.cat-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.painted-world .room-cat{width:23%;min-width:78px;max-width:100px}.refuge-greeting{top:20px;left:18px}.refuge-greeting p{font-size:12px;max-width:29ch}.cat-list{grid-template-columns:1fr;gap:2px}.family-portrait{width:96px;flex-basis:96px}.cat-list article{gap:20px;padding:18px 2px}.collection{padding:20px 8px}.collection h2{font-size:22px}.world-tabs button{min-height:54px}.cat-bed{width:73px;height:32px}.cat-box{width:48px;height:37px}.reward-note{font-size:12px;padding:10px 12px}.free-practice{padding:0 18px}.mission-invite h2{font-size:20px}.mission-invite p{font-size:13px}.cat-story .story-portrait{width:75px}}
-@media(prefers-reduced-motion:reduce){.room-cat *, .cat-ball,.paw-trail span,.gift-arrival{animation:none!important}.kitten-eyelid{transform:translate(-50%,-50%) scaleY(0)}.reward-note{animation:none}.room-cat{will-change:auto}}
+@media(prefers-reduced-motion:reduce){.room-cat *, .cat-ball,.paw-trail span,.gift-arrival{animation:none!important}.reward-note{animation:none}.room-cat{will-change:auto}}

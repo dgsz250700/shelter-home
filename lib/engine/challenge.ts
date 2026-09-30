@@ -25,6 +25,6 @@ export function freeQueue(skill:Skill,level:Level,seed:string):Question[] {
 }
 
 export function careRecipient<T extends {id:string;personality:string;careCount?:number;adoptedAt?:string|null}>(cats:T[],reward:CareReward):T|undefined {
- const preferred:Record<CareReward,string[]>={food:[],bed:['dormilón','tímido'],box:['curioso'],treat:['cariñoso','gruñón'],toy:['juguetón'],yarn:['juguetón','curioso'],vet:[]};
+ const preferred:Record<CareReward,string[]>={food:[],bed:['dormilón','asustadizo'],box:['curioso'],treat:['cariñoso','gruñón','elegante'],toy:['travieso','loquito'],yarn:['travieso','curioso'],vet:[]};
  return cats.filter(c=>!c.adoptedAt).sort((a,b)=>(a.careCount??0)-(b.careCount??0)||Number(preferred[reward].includes(b.personality))-Number(preferred[reward].includes(a.personality))||a.id.localeCompare(b.id))[0];
 }
