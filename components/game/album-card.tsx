@@ -17,7 +17,7 @@ export function AlbumCard({cat,number}:{cat:ShelterCat;number:number}) {
     <CatArt cat={cat} still/>
     {cat.adoptedAt&&<span className="album-stamp"><Icon name="home" size={12}/></span>}
    </span>
-   <span className="album-info"><strong>{cat.name}</strong><span className="album-trait">{cat.personality}</span></span>
+   <span className="album-info"><strong>{cat.name}</strong><span className="album-trait">{cat.personality}</span>{cat.favorite&&<span className="album-fav"><Icon name="star" size={11}/>{cat.favorite}</span>}</span>
   </button>
   <dialog ref={dialog} className="album-detail" style={tint} aria-label={`Lámina de ${cat.name}`} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close();}}>
    <button type="button" className="icon-button album-close" aria-label="Cerrar lámina" onClick={()=>dialog.current?.close()}><Icon name="close"/></button>
