@@ -4,3 +4,4 @@
 @keyframes cat-sprite-loop{from{background-position-x:0%}to{background-position-x:100%}}
 [data-motion=off] .illustrated-cat>.cat-sprite{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){.illustrated-cat>.cat-sprite{animation:none}}
+.illustrated-cat>.cat-portrait{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%}

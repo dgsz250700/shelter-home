@@ -177,10 +177,10 @@ export function RefugeClient({
                   {liveCats.length===0&&<p>El primer reto logrado abre las puertas del refugio.</p>}
                   <div className="cat-list">
                     {residents.map((cat) => (
-                      <article key={cat.id}><div className="family-portrait"><CatArt cat={cat}/></div><div className="family-story"><h3>{cat.name}</h3><span>{cat.personality}</span><p>{cat.story}</p><small>{cat.careCount??0} cuidados recibidos</small></div></article>
+                      <article key={cat.id}><div className="family-portrait"><CatArt cat={cat} still/></div><div className="family-story"><h3>{cat.name}</h3><span>{cat.personality}</span><p>{cat.story}</p><small>{cat.careCount??0} cuidados recibidos</small></div></article>
                     ))}
                   </div>
-                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="cat-list">{alumni.map(cat=><article key={cat.id}><div className="family-portrait"><CatArt cat={cat}/></div><div className="family-story"><h3>{cat.name}</h3><span>Adoptado el {new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'long',timeZone:'America/Bogota'}).format(new Date(cat.adoptedAt!))}</span><p>{cat.story}</p><small>Encontró un hogar gracias a tu constancia.</small></div></article>)}</div></div>}
+                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="cat-list">{alumni.map(cat=><article key={cat.id}><div className="family-portrait"><CatArt cat={cat} still/></div><div className="family-story"><h3>{cat.name}</h3><span>Adoptado el {new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'long',timeZone:'America/Bogota'}).format(new Date(cat.adoptedAt!))}</span><p>{cat.story}</p><small>Encontró un hogar gracias a tu constancia.</small></div></article>)}</div></div>}
                 </section>
               )}
               {view === "skills" && (
@@ -267,7 +267,7 @@ export function RefugeClient({
                   {dates.includes(today) ? "Puedes seguir practicando a tu ritmo." : `${topic?.name ?? "Tu próxima habilidad"} · 7 de 10 al primer intento. Las pistas están disponibles.`}
                 </p>
                 {topic?.driveFileId&&<div className="daily-bank-ticket"><span>Preparado por tu profe</span><strong>{topic.name}</strong><div aria-label="Diez preguntas de dificultad progresiva">{[1,1,1,2,2,2,3,3,4,4].map((level,i)=><i key={i} style={{height:8+level*4}}/>)}</div><small>10 preguntas · empezamos suave y subimos el nivel</small></div>}
-                <MissionWelcome recipient={recipient?.name} today={today} completed={dates.includes(today)} reward={nextReward} busy={busy} available={tries<DAILY_CHANCES&&queue.length>0} onStart={()=>void begin("daily")}/>
+                <MissionWelcome recipient={recipient?.name} recipientCat={recipient} today={today} completed={dates.includes(today)} reward={nextReward} busy={busy} available={tries<DAILY_CHANCES&&queue.length>0} onStart={()=>void begin("daily")}/>
                 <div className="mission-perks">
                   <span>
                     <Icon name="book" size={18} />
