@@ -11,7 +11,8 @@ function configuration(){
  if(!c.client_email||!c.private_key||!/^[\w-]+$/.test(folder))throw new Error('Revisa la configuración privada de Drive.');
  return {credentials:{client_email:c.client_email,private_key:c.private_key},folder};
 }
-type DriveFile={id:string;name:string;size:string;modifiedTime:string};
+// `folderName` is the subfolder a PDF lives in (one per student, e.g. «Laura», «Sebas»); empty for the main folder.
+type DriveFile={id:string;name:string;size:string;modifiedTime:string;folderName?:string};
 // Carpeta compartida como «Cualquier persona con el enlace»: se lee sin credenciales de Google.
 function publicFolder(){
  const folder=process.env.GOOGLE_DRIVE_PUBLIC_FOLDER_ID?.trim();
@@ -21,20 +22,31 @@ function publicFolder(){
 }
 const unescape=(s:string)=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').trim();
 const publicDownload=(id:string)=>`https://drive.usercontent.google.com/download?id=${id}&export=download`;
-async function publicFiles(folder:string){
+async function publicEntries(folder:string){
  const response=await fetch(`https://drive.google.com/embeddedfolderview?id=${folder}`,{cache:'no-store',signal:AbortSignal.timeout(15000)});
  const html=response.ok?await response.text():'';
  if(!html.includes('class="flip-entries"'))throw new Error('No pudimos abrir la carpeta. Comprueba que esté compartida como «Cualquier persona con el enlace».');
  const folderName=unescape(html.match(/<title>([^<]*)<\/title>/)?.[1]??'')||'Banco de preguntas';
- const entries=html.split('<div class="flip-entry" ').slice(1).flatMap(chunk=>{
+ const pdfs:{id:string;name:string}[]=[],folders:{id:string;name:string}[]=[];
+ for(const chunk of html.split('<div class="flip-entry" ').slice(1)){
   const id=chunk.match(/^id="entry-([\w-]{5,200})"/)?.[1],name=chunk.match(/<div class="flip-entry-title">([^<]*)<\/div>/)?.[1];
-  return id&&name&&chunk.includes('/type/application/pdf"')?[{id,name:unescape(name)}]:[];
- }).slice(0,100);
- const files=await Promise.all(entries.map(async ({id,name}):Promise<DriveFile|null>=>{
+  if(!id||!name)continue;
+  if(chunk.includes('/type/application/pdf"'))pdfs.push({id,name:unescape(name)});
+  else if(chunk.includes('/drive/folders/'))folders.push({id,name:unescape(name)});
+ }
+ return {folderName,pdfs,folders};
+}
+async function publicFiles(folder:string){
+ const root=await publicEntries(folder);
+ // One level of subfolders: each one holds a student's banks.
+ const nested=await Promise.all(root.folders.slice(0,20).map(async sub=>(await publicEntries(sub.id)).pdfs.map(pdf=>({...pdf,folderName:sub.name}))));
+ const entries=[...root.pdfs.map(pdf=>({...pdf,folderName:undefined as string|undefined})),...nested.flat()].slice(0,100);
+ const folderName=root.folderName;
+ const files=await Promise.all(entries.map(async ({id,name,folderName:sub}):Promise<DriveFile|null>=>{
   const head=await fetch(publicDownload(id),{method:'HEAD',cache:'no-store',signal:AbortSignal.timeout(15000)}).catch(()=>null);
   const modified=head?.headers.get('last-modified'),size=head?.headers.get('content-length');
   if(!head?.ok||head.headers.get('content-type')?.includes('text/html')||!modified||!size)return null;
-  return {id,name,size,modifiedTime:new Date(modified).toISOString()};
+  return {id,name,size,modifiedTime:new Date(modified).toISOString(),folderName:sub};
  }));
  return {folderName,files:files.filter((f):f is DriveFile=>Boolean(f)).sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime))};
 }
@@ -74,6 +86,15 @@ export async function setDriveFolder(value:string){
  if(saved.error)throw new Error('No se pudo guardar la carpeta.');
  return {folder,name:file.name};
 }
+// Subfolders of the connected folder (one level), each one usually named after a student.
+async function apiFolders(base:string,headers:Record<string,string>,folder:string){
+ const params=new URLSearchParams({q:`'${folder}' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'`,fields:'files(id,name)',pageSize:'20'});
+ try{
+  const response=await fetch(`${base}?${params}`,{headers,cache:'no-store',signal:AbortSignal.timeout(15000)});
+  if(!response.ok)return [];
+  return ((await response.json()) as {files?:{id:string;name:string}[]}).files??[];
+ }catch{return [];}
+}
 export async function driveBank(fileId?:string){
  const shared=configuration()?null:publicFolder();
  if(shared){await tutorDatabase();return publicBank(shared,fileId);}
@@ -86,18 +107,24 @@ export async function driveBank(fileId?:string){
   const meta=await fetch(`${base}/${fileId}?fields=id,name,mimeType,size,parents,trashed`,{headers,cache:'no-store',signal:AbortSignal.timeout(15000)});
   if(!meta.ok)throw new Error('No se pudo abrir ese archivo de Drive.');
   const file=await meta.json() as {name:string;mimeType:string;size:string;parents?:string[];trashed?:boolean};
-  if(file.trashed||!file.parents?.includes(config.folder)||file.mimeType!=='application/pdf'||Number(file.size)>15*1024*1024)throw new Error('Elige un PDF de la carpeta conectada, de hasta 15 MB.');
+  if(file.trashed||file.mimeType!=='application/pdf'||Number(file.size)>15*1024*1024)throw new Error('Elige un PDF de la carpeta conectada, de hasta 15 MB.');
+  // Only the connected folder or one of its student subfolders.
+  const inFolder=file.parents?.includes(config.folder)||(await apiFolders(base,headers,config.folder)).some(f=>file.parents?.includes(f.id));
+  if(!inFolder)throw new Error('Elige un PDF de la carpeta conectada, de hasta 15 MB.');
   const response=await fetch(`${base}/${fileId}?alt=media`,{headers,cache:'no-store',signal:AbortSignal.timeout(30000)});
   if(!response.ok)throw new Error('Drive no pudo entregar el PDF. Reintenta.');
   return {configured:true as const,response,name:file.name,folder:config.folder};
  }
- const params=new URLSearchParams({q:`'${config.folder}' in parents and trashed = false and mimeType = 'application/pdf'`,fields:'files(id,name,size,modifiedTime),nextPageToken',pageSize:'100',orderBy:'modifiedTime desc'});
- const files:Array<{id:string;name:string;size:string;modifiedTime:string}>=[];
- do{
-  const response=await fetch(`${base}?${params}`,{headers,cache:'no-store',signal:AbortSignal.timeout(15000)});
-  if(!response.ok)throw new Error('No pudimos leer la carpeta. Comprueba que esté compartida con la cuenta de servicio.');
-  const data=await response.json() as {files:typeof files;nextPageToken?:string};files.push(...data.files);
-  if(!data.nextPageToken)break;params.set('pageToken',data.nextPageToken);
- }while(files.length<500);
+ const files:DriveFile[]=[];
+ for(const place of [{id:config.folder,name:undefined as string|undefined},...(await apiFolders(base,headers,config.folder))]){
+  const params=new URLSearchParams({q:`'${place.id}' in parents and trashed = false and mimeType = 'application/pdf'`,fields:'files(id,name,size,modifiedTime),nextPageToken',pageSize:'100',orderBy:'modifiedTime desc'});
+  do{
+   const response=await fetch(`${base}?${params}`,{headers,cache:'no-store',signal:AbortSignal.timeout(15000)});
+   if(!response.ok)throw new Error('No pudimos leer la carpeta. Comprueba que esté compartida con la cuenta de servicio.');
+   const data=await response.json() as {files:DriveFile[];nextPageToken?:string};files.push(...data.files.map(f=>({...f,folderName:place.name})));
+   if(!data.nextPageToken)break;params.set('pageToken',data.nextPageToken);
+  }while(files.length<500);
+ }
+ files.sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime));
  return {configured:true as const,managed:Boolean(configuration()),files:files.slice(0,500),folder:config.folder,folderName:config.folderName,email:config.email};
 }

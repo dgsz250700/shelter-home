@@ -10,3 +10,10 @@ export async function assignSkill(db:TutorDb,skillId:string,studentIds:string[])
   if(cleared.error)throw new Error("No pudimos guardar para quién es esta práctica.");
   if(valid.length){const added=await db.from("skill_students").insert(valid.map(user_id=>({skill_id:skillId,user_id})));if(added.error)throw new Error("No pudimos guardar para quién es esta práctica.");}
 }
+// The student whose name matches a Drive folder, ignoring case and accents.
+export async function studentNamed(db:TutorDb,folderName:string){
+  const plain=(t:string)=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
+  const {data}=await db.from("profiles").select("id,display_name").eq("role","student");
+  const matches=(data??[]).filter(p=>plain(String(p.display_name))===plain(folderName));
+  return matches.length===1?String(matches[0].id):null;
+}

@@ -1,5 +1,5 @@
 import 'server-only';
-import { assignSkill } from "./skill-audience";
+import { assignSkill, studentNamed } from "./skill-audience";
 import {tutorDatabase} from './tutor-auth';
 import {driveBank} from './drive';
 import {deepseek} from '@/lib/ai/deepseek';
@@ -26,7 +26,7 @@ export async function extractDriveQuestions(body:{fileId?:string;text?:string}){
   const done=results.flatMap(r=>r.status==='fulfilled'?[r.value]:[]),questions=done.flatMap(r=>r.questions);
   if(!questions.length)throw new Error('No encontramos preguntas con nivel y respuesta. Añade un solucionario al PDF y encabezados de nivel.');
   await completeAI(id,'completed',done[0].model,done.reduce((n,r)=>n+r.tokens,0));
-  return {name:file.name.replace(/\.pdf$/i,'').slice(0,100),fileId:file.id,modifiedTime:file.modifiedTime,questions,issues:done.flatMap(r=>r.issues)};
+  return {name:file.name.replace(/\.pdf$/i,'').slice(0,100),fileId:file.id,modifiedTime:file.modifiedTime,folderName:file.folderName,questions,issues:done.flatMap(r=>r.issues)};
  }catch(error){await completeAI(id,'failed').catch(()=>undefined);throw error;}
 }
 export async function publishDriveQuestions(body:{fileId?:string;modifiedTime?:string;subject?:string;questions?:unknown;students?:unknown}){
@@ -37,6 +37,9 @@ export async function publishDriveQuestions(body:{fileId?:string;modifiedTime?:s
  if(file.modifiedTime!==body.modifiedTime)throw new Error('El PDF cambió. Vuelve a importarlo antes de activar.');
  const saved=await db.rpc('publish_drive_bank',{p_file:file.id,p_folder:bank.folder,p_modified:file.modifiedTime,p_name:file.name.replace(/\.pdf$/i,'').slice(0,100),p_subject:body.subject,p_questions:questions});
  if(saved.error)throw new Error(saved.error.message.includes('SESSION_IN_PROGRESS')?'Hay una práctica abierta con este banco. Termínala antes de actualizarlo.':'No se pudo activar el banco. Tus preguntas siguen aquí.');
- if(Array.isArray(body.students))await assignSkill(db,String(saved.data),body.students.map(String));
+ // A PDF inside a student's folder («Laura», «Sebas») is only for that student; otherwise the tutor's choice.
+ const owner=file.folderName?await studentNamed(db,file.folderName):null;
+ if(owner)await assignSkill(db,String(saved.data),[owner]);
+ else if(Array.isArray(body.students))await assignSkill(db,String(saved.data),body.students.map(String));
  revalidatePath('/');revalidatePath('/tutor');return {id:saved.data,name:file.name};
 }
