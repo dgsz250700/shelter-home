@@ -18,7 +18,7 @@ import {MissionWelcome} from "./mission-welcome";
 import {AlbumCard} from "./album-card";
 import {PropTransparency} from "@/components/scene/refuge-prop";
 import {FreePractice} from "./free-practice";
-import {DAILY_CHANCES, nextCareReward, rewardCopy, careRecipient, type PracticeMode, type CareReward} from "@/lib/engine/challenge";
+import {DAILY_CHANCES, nextCareReward, careRecipient, type PracticeMode, type CareReward} from "@/lib/engine/challenge";
 import type {PracticeSession} from "@/lib/data/student";
 import { startMission } from "@/lib/data/actions";
 import { Practice } from "./practice";
@@ -260,10 +260,9 @@ export function RefugeClient({
                 <div className="mission-icon">
                   <Icon name="star" size={30} />
                 </div>
-                <h2>{dates.includes(today) ? "¡Reto de hoy logrado!" : rewardCopy[nextReward].title}</h2>
-                <p>
-                  {dates.includes(today) ? "Puedes seguir practicando a tu ritmo." : `${topic?.name ?? "Tu próxima habilidad"} · 7 de 10 al primer intento. Las pistas están disponibles.`}
-                </p>
+                {/* Kept minimal: the reward and the 7/10 goal are explained in "Ver misión de hoy". */}
+                <h2>{dates.includes(today) ? "¡Reto de hoy logrado!" : "Reto de hoy"}</h2>
+                {dates.includes(today) && <p>Puedes seguir practicando a tu ritmo.</p>}
                 {topic?.driveFileId&&<div className="daily-bank-ticket"><span>Preparado por tu profe</span><strong>{topic.name}</strong><div aria-label="Diez preguntas de dificultad progresiva">{[1,1,1,2,2,2,3,3,4,4].map((level,i)=><i key={i} style={{height:8+level*4}}/>)}</div><small>10 preguntas · empezamos suave y subimos el nivel</small></div>}
                 <MissionWelcome recipient={recipient?.name} recipientCat={recipient} today={today} completed={dates.includes(today)} reward={nextReward} busy={busy} available={tries<DAILY_CHANCES&&queue.length>0} onStart={()=>void begin("daily")}/>
                 <div className="mission-perks">
