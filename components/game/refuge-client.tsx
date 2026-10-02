@@ -173,7 +173,7 @@ export function RefugeClient({
               </nav>
               {view === "cats" && (
                 <section className="collection">
-                  <h2>Tu pequeña familia</h2>
+                  <h2>Gatitos rescatados</h2>
                   {liveCats.length===0&&<p>El primer reto logrado abre las puertas del refugio.</p>}
                   <div className="album">
                     {residents.map((cat) => <AlbumCard key={cat.id} cat={cat} number={liveCats.indexOf(cat)+1}/>)}
