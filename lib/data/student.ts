@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { publicConfig } from "./config";
+import { currentStudentId, serviceDatabase } from "./student-access";
 import { database, isTutorPreview } from "./server";
 import { prepareSkill } from "./catalog";
 import type {
@@ -21,25 +22,45 @@ import {
 } from "@/lib/engine/mastery";
 import { evaluate, exerciseFor } from "@/lib/engine/exercises";
 import type { ShelterCat, RewardStatus } from "./shelter";
-type LauraConnection = {db: SupabaseClient; userId:string; expiresAt:number};
-let connected:LauraConnection|null=null;
-let connecting:Promise<LauraConnection>|null=null;
+type StudentConnection = {db: SupabaseClient; userId:string; expiresAt:number};
+// One live session per student, reused across requests and refreshed before it expires.
+const connections=new Map<string,StudentConnection>();
+const connecting=new Map<string,Promise<StudentConnection>>();
+export class NoStudentError extends Error { constructor(){super("Elige quién va a entrar al refugio.");} }
+async function openSession(studentId:string,previous?:StudentConnection):Promise<StudentConnection>{
+  const {url,key}=publicConfig();
+  const db=previous?.db ?? createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+  if(previous){
+    const refreshed=await db.auth.refreshSession();
+    if(!refreshed.error&&refreshed.data.session&&refreshed.data.user?.id===studentId)
+      return {db,userId:studentId,expiresAt:(refreshed.data.session.expires_at ?? Math.floor(Date.now()/1000)+300)*1000};
+  }
+  // No password needed: the server issues a one-time sign-in token for this student.
+  const admin=serviceDatabase();
+  const {data:found,error:userError}=await admin.auth.admin.getUserById(studentId);
+  if(userError||!found.user?.email)throw new Error("El refugio necesita reconectar. Intentémoslo de nuevo.");
+  const link=await admin.auth.admin.generateLink({type:"magiclink",email:found.user.email});
+  if(link.error)throw new Error("El refugio necesita reconectar. Intentémoslo de nuevo.");
+  const auth=await db.auth.verifyOtp({type:"magiclink",token_hash:link.data.properties.hashed_token});
+  if(auth.error||!auth.data.user||auth.data.user.id!==studentId)throw new Error("El refugio necesita reconectar. Intentémoslo de nuevo.");
+  return {db,userId:studentId,expiresAt:(auth.data.session?.expires_at ?? Math.floor(Date.now()/1000)+300)*1000};
+}
 export const studentClient = cache(async () => {
-  if(connected && connected.expiresAt>Date.now()+60000)return connected;
-  if(connecting)return connecting;
-  connecting=(async()=>{
-    const {url,key}=publicConfig();
-    const db=connected?.db ?? createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
-    const email=process.env.LAURA_EMAIL,password=process.env.LAURA_PASSWORD;
-    if(!email||!password)throw new Error("Falta el acceso de Laura.");
-    let auth=connected ? await db.auth.refreshSession() : await db.auth.signInWithPassword({email,password});
-    if(auth.error && connected)auth=await db.auth.signInWithPassword({email,password});
-    if(auth.error||!auth.data.user)throw new Error("El refugio necesita reconectar. Intentémoslo de nuevo.");
-    connected={db,userId:auth.data.user.id,expiresAt:(auth.data.session?.expires_at ?? Math.floor(Date.now()/1000)+300)*1000};
-    return connected;
-  })();
-  try{return await connecting;}finally{connecting=null;}
+  const studentId=await currentStudentId();
+  if(!studentId)throw new NoStudentError();
+  const live=connections.get(studentId);
+  if(live && live.expiresAt>Date.now()+60000)return live;
+  const pending=connecting.get(studentId);
+  if(pending)return pending;
+  const opening=openSession(studentId,live).then(connection=>{connections.set(studentId,connection);return connection;});
+  connecting.set(studentId,opening);
+  try{return await opening;}finally{connecting.delete(studentId);}
 });
+export async function studentName(){
+  const {db,userId}=await studentClient();
+  const {data}=await db.from("profiles").select("display_name").eq("id",userId).maybeSingle();
+  return String(data?.display_name ?? "");
+}
 export async function loadPractice() {
   const { db, userId } = await studentClient();
   const [skills, masteries, streak, state, sessions, practiced] =
@@ -188,7 +209,7 @@ export async function getTutorSummary() {
         .select("*")
         .order("created_at", { ascending: false }),
       db.from("streaks").select("*"),
-      db.from("profiles").select("id").eq("role", "student").single(),
+      db.from("profiles").select("id").eq("role", "student").order("created_at").limit(1).single(),
     ]);
   if (
     skills.error ||

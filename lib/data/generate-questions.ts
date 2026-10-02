@@ -17,7 +17,7 @@ export async function generateQuestions(body:{prompt?:string;count?:number;level
   if(!Number.isInteger(level)||level<1||level>4)throw new Error('Elige un nivel de 0 a 3.');
   let context='',evidenceCount=0;
   if(body.skillId){
-   const [{data:skill,error},{data:student}]=await Promise.all([db.from('skills').select('id,name,description,subject').eq('id',body.skillId).single(),db.from('profiles').select('id').eq('role','student').single()]);
+   const [{data:skill,error},{data:student}]=await Promise.all([db.from('skills').select('id,name,description,subject').eq('id',body.skillId).single(),db.from('profiles').select('id').eq('role','student').order('created_at').limit(1).single()]);
    if(error||!skill||!student)throw new Error('Selecciona una habilidad disponible o elige Tema nuevo.');
    const evidence=await learnerEvidence(student.id),relevant=evidence.evidence.find(e=>e.skillId===skill.id);evidenceCount=relevant?.sample??0;context=JSON.stringify({skill,evidence:relevant,strategy:String(body.strategy??'guiada').slice(0,100)});
   }

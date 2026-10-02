@@ -223,7 +223,7 @@ export function AICoach({
                 key={m.id ?? i}
                 className={`coach-message from-${m.role}`}
               >
-                <b>{m.role === "user" ? "Laura" : "Numa"}</b>
+                <b>{m.role === "user" ? "Tú" : "Numa"}</b>
                 <ReadableText text={m.content}/>
               </article>
             ))}

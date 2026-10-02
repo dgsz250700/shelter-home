@@ -1,7 +1,7 @@
 import {behaviorEvidence} from "./telemetry";
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { studentClient, loadPractice } from "./student";
+import { studentClient, studentName, loadPractice } from "./student";
 import { tutorDatabase } from "./tutor-auth";
 import { publicConfig } from "./config";
 import { deepseek } from "@/lib/ai/deepseek";
@@ -191,7 +191,7 @@ export async function askCoach(input: {
         {
           role: "system",
           content: COACH_SYSTEM + "\nDATOS REALES Y EJERCICIO VIGENTE (responde sobre este ejercicio, no los de conversaciones anteriores):\n" + JSON.stringify({
-            alias: "Laura",
+            alias: (await studentName()) || "la estudiante",
             todayTopic: practice.skills.find(s => s.id === practice.queue[0]?.skillId)?.name ?? null,
             memory: state.memory,
             evidence: evidence.evidence,
@@ -252,6 +252,8 @@ export async function tutorReport(question = "") {
     .from("profiles")
     .select("id")
     .eq("role", "student")
+    .order("created_at")
+    .limit(1)
     .single();
   if (!auth.user || !profile)
     throw new Error("No se encontró el perfil de Laura.");

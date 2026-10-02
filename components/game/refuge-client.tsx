@@ -20,7 +20,7 @@ import {PropTransparency} from "@/components/scene/refuge-prop";
 import {FreePractice} from "./free-practice";
 import {DAILY_CHANCES, nextCareReward, careRecipient, type PracticeMode, type CareReward} from "@/lib/engine/challenge";
 import type {PracticeSession} from "@/lib/data/student";
-import { startMission } from "@/lib/data/actions";
+import { startMission, leaveStudent } from "@/lib/data/actions";
 import { Practice } from "./practice";
 import { Icon } from "./icons";
 import { SkillIcon } from "./skill-icon";
@@ -39,7 +39,11 @@ export function RefugeClient({
   today,
   masteries,
   dailyTries,
+  studentName,
+  canSwitch=false,
 }: {
+  studentName: string;
+  canSwitch?: boolean;
   cats: ShelterCat[];
   rewards: RewardStatus;
   skills: Skill[];
@@ -114,7 +118,7 @@ export function RefugeClient({
           <span className="brand-mark">
             <Icon name="paw" size={25} />
           </span>
-          <span className="refuge-brand-name">Refugio <small>de Laura</small></span>
+          <span className="refuge-brand-name">Refugio <small>de {studentName}</small></span>
         </Link>
         <div className="header-actions">
           <span
@@ -125,6 +129,7 @@ export function RefugeClient({
             <b>{liveStreak.current}</b>
 
           </span>
+          {canSwitch && <button type="button" className="switch-student" onClick={()=>void leaveStudent().then(()=>router.refresh())}><Icon name="back" size={15}/>Cambiar</button>}
           <Link href="/tutor" className="admin-link">
             <Icon name="gear" size={17} />
             Admin
@@ -150,7 +155,7 @@ export function RefugeClient({
               </div>
             </div>
           )}
-          <div hidden={view!=="home"&&!session}><Shelter today={today} lastCare={liveStreak.last_session_date} feedingUnlocked={dates.includes(today)} cats={residents} state={liveState} celebration={celebration} paused={Boolean(session)||view!=="home"} /></div>
+          <div hidden={view!=="home"&&!session}><Shelter studentName={studentName} today={today} lastCare={liveStreak.last_session_date} feedingUnlocked={dates.includes(today)} cats={residents} state={liveState} celebration={celebration} paused={Boolean(session)||view!=="home"} /></div>
           {!session && (
             <>
               <nav className="world-tabs" aria-label="Explorar el refugio">

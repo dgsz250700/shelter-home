@@ -6,3 +6,6 @@ node_modules/
 *.tsbuildinfo
 coverage/
 supabase/.temp/
+
+# A global "data/" ignore rule must not hide the app's data layer.
+!lib/data/

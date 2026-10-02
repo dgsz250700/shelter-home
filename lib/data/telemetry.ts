@@ -11,7 +11,7 @@ export async function ingestEvents(raw:unknown){
  const db=store();const session=await database();const auth=await session.auth.getUser();
  const profile=auth.data.user ? await session.from('profiles').select('role').eq('id',auth.data.user.id).maybeSingle() : null;
  const tutor=profile?.data?.role==='tutor';
- const laura=events.some(e=>e.surface==='refuge')?await studentClient():null;
+ const laura=events.some(e=>e.surface==='refuge')?await studentClient().catch(()=>null):null;
  const accepted=events.filter(e=>e.surface!=='tutor'||tutor);
  const rows=accepted.map(e=>({...e,actor_id:e.surface==='refuge'?laura?.userId??null:tutor?auth.data.user!.id:null,actor_kind:e.surface==='refuge'?'shared_refuge':tutor?'tutor':'visitor',is_test:process.env.NODE_ENV!=='production'||(e.surface==='refuge'&&tutor)}));
  // UUIDs from the client identify context, never authorize access. Discard unowned references.

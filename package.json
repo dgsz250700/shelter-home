@@ -14,6 +14,8 @@
     "setup:doctor": "node scripts/setup-doctor.mjs",
     "setup:remote": "node --env-file=.env.local scripts/setup-remote.mjs",
     "setup:verify": "node --env-file=.env.local lib/data/verify-connection.mjs",
+    "student:add": "node --env-file=.env.local scripts/students.mjs add",
+    "student:pin": "node --env-file=.env.local scripts/students.mjs pin",
     "setup:daniela": "pnpm setup:doctor && pnpm setup:remote && pnpm verify && pnpm exec vercel --prod --yes",
     "admin:password": "node --env-file=.env.local scripts/change-admin-password.mjs"
   },

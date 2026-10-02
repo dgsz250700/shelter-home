@@ -1,0 +1,14 @@
+/* Student selection: big name buttons and a PIN pad that kids can use. */
+.student-picker .auth-panel{text-align:center;max-width:420px}
+.student-list{display:grid;gap:10px;margin-top:18px}
+.student-choice{display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 16px;border-radius:14px;border:2px solid #e3dccd;background:#fffdf8;font:inherit;font-size:20px;font-weight:800;color:#17394a;cursor:pointer;text-align:left}
+.student-choice:hover{border-color:#d9a032}
+.student-choice:focus-visible{outline:3px solid #2448aa;outline-offset:2px}
+.student-choice span{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#f3e4c8;color:#8a4b3a;font-size:18px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin:18px 0}
+.pin-dots i{width:16px;height:16px;border-radius:50%;border:2px solid #17394a}
+.pin-dots i.filled{background:#17394a}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:280px;margin:0 auto}
+.pin-pad .key{min-height:56px;font-size:22px}
+.student-picker .error{color:#a7362b;font-weight:700}
+.switch-student{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:700;color:#17394a;background:none;border:0;cursor:pointer;padding:6px}

@@ -19,7 +19,9 @@ export function Shelter({
   lastCare,
   celebration=null,
   paused=false,
+  studentName,
 }: {
+  studentName?: string;
   cats: ShelterCat[];
   state?: ShelterState;
   compact?: boolean;
@@ -39,7 +41,7 @@ export function Shelter({
       className={`room-world rescue-world painted-world ${compact ? "room-compact" : ""} ${feedingUnlocked ? "daily-cared" : "daily-waiting"} ${energy<85 ? "needs-care" : ""}`}
     >
       <Image className="room-illustration" src="/art/refuge-courtyard.webp" alt="Refugio de animales: patio soleado, enfermería, casitas de adopción y comedor" fill sizes="(max-width: 760px) 100vw, 95vw" priority />
-      {!compact && <div className="refuge-greeting"><h1>Hola, Laura</h1><p>{feedingUnlocked ? "Un ratito más, un paso más." : "Lo que hoy practicas, mañana será más fácil."}</p></div>}
+      {!compact && <div className="refuge-greeting"><h1>{studentName ? `Hola, ${studentName}` : "Hola"}</h1><p>{feedingUnlocked ? "Un ratito más, un paso más." : "Lo que hoy practicas, mañana será más fácil."}</p></div>}
       <div className="world-atmosphere" aria-hidden="true"><span/><span/><span/></div>
       <div className="shelter-objects" aria-label="Objetos de los gatos">
        <div {...activate("ball")} data-object="ball" className={`cat-ball ${celebration?.reward==='toy'||celebration?.reward==='yarn'?'gift-arrival':''}`}><RefugeProp kind="ball" label="Pelota de tela para los gatos"/></div>

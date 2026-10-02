@@ -1,15 +1,16 @@
 import {beforeEach,expect,it,vi} from 'vitest';
-const m=vi.hoisted(()=>({rpc:vi.fn(),signIn:vi.fn(),refresh:vi.fn(),from:vi.fn()}));
+const m=vi.hoisted(()=>({rpc:vi.fn(),signIn:vi.fn(),refresh:vi.fn(),from:vi.fn(),student:vi.fn(),link:vi.fn()}));
 vi.mock('server-only',()=>({}));
 vi.mock('next/cache',()=>({revalidatePath:vi.fn()}));
 vi.mock('./server',()=>({database:vi.fn()}));
 vi.mock('./config',()=>({publicConfig:()=>({url:'https://example.supabase.co',key:'test'})}));
 vi.mock('./tutor-auth',()=>({tutorDatabase:async()=>({rpc:m.rpc,from:m.from})}));
-vi.mock('@supabase/supabase-js',()=>({createClient:()=>({auth:{signInWithPassword:m.signIn,refreshSession:m.refresh},from:m.from,rpc:m.rpc})}));
+vi.mock('@supabase/supabase-js',()=>({createClient:()=>({auth:{verifyOtp:m.signIn,refreshSession:m.refresh},from:m.from,rpc:m.rpc})}));
+vi.mock('./student-access',()=>({currentStudentId:m.student,serviceDatabase:()=>({auth:{admin:{getUserById:async()=>({data:{user:{email:'student@example.com'}},error:null}),generateLink:m.link}}})}));
 import {saveSkill} from './tutor-actions';
 import {studentClient} from './student';
-beforeEach(()=>{vi.stubEnv('LAURA_EMAIL','test@example.com');vi.stubEnv('LAURA_PASSWORD','test');m.signIn.mockResolvedValue({data:{user:{id:'student'},session:{expires_at:Math.floor(Date.now()/1000)+3600}},error:null});});
-it('reutiliza la sesión compartida en peticiones concurrentes',async()=>{
+beforeEach(()=>{m.student.mockResolvedValue('student');m.link.mockResolvedValue({data:{properties:{hashed_token:'token'}},error:null});m.signIn.mockResolvedValue({data:{user:{id:'student'},session:{expires_at:Math.floor(Date.now()/1000)+3600}},error:null});});
+it('reutiliza la sesión de cada estudiante en peticiones concurrentes',async()=>{
  await Promise.all([studentClient(),studentClient(),studentClient()]);expect(m.signIn).toHaveBeenCalledTimes(1);
 });
 it('el profe guarda una expresión y sus niveles en una transacción',async()=>{
