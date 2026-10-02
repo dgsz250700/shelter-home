@@ -1,4 +1,5 @@
 import 'server-only';
+import { assignSkill } from "./skill-audience";
 import {tutorDatabase} from './tutor-auth';
 import {driveBank} from './drive';
 import {deepseek} from '@/lib/ai/deepseek';
@@ -28,13 +29,14 @@ export async function extractDriveQuestions(body:{fileId?:string;text?:string}){
   return {name:file.name.replace(/\.pdf$/i,'').slice(0,100),fileId:file.id,modifiedTime:file.modifiedTime,questions,issues:done.flatMap(r=>r.issues)};
  }catch(error){await completeAI(id,'failed').catch(()=>undefined);throw error;}
 }
-export async function publishDriveQuestions(body:{fileId?:string;modifiedTime?:string;subject?:string;questions?:unknown}){
+export async function publishDriveQuestions(body:{fileId?:string;modifiedTime?:string;subject?:string;questions?:unknown;students?:unknown}){
  const db=await tutorDatabase(),questions=validateDriveBank(body.questions);
- if(!['fisica','quimica','matematicas'].includes(body.subject??''))throw new Error('Elige la materia.');
+ if(!['fisica','quimica','matematicas','musica'].includes(body.subject??''))throw new Error('Elige la materia.');
  const bank=await driveBank();if(!bank.configured||!('folder' in bank)||!bank.folder)throw new Error('Conecta una carpeta.');
  const file=bank.files?.find(f=>f.id===body.fileId);if(!file)throw new Error('El archivo ya no está en la carpeta.');
  if(file.modifiedTime!==body.modifiedTime)throw new Error('El PDF cambió. Vuelve a importarlo antes de activar.');
  const saved=await db.rpc('publish_drive_bank',{p_file:file.id,p_folder:bank.folder,p_modified:file.modifiedTime,p_name:file.name.replace(/\.pdf$/i,'').slice(0,100),p_subject:body.subject,p_questions:questions});
- if(saved.error)throw new Error(saved.error.message.includes('SESSION_IN_PROGRESS')?'Laura tiene una práctica abierta con este banco. Termínala antes de actualizarlo.':'No se pudo activar el banco. Tus preguntas siguen aquí.');
+ if(saved.error)throw new Error(saved.error.message.includes('SESSION_IN_PROGRESS')?'Hay una práctica abierta con este banco. Termínala antes de actualizarlo.':'No se pudo activar el banco. Tus preguntas siguen aquí.');
+ if(Array.isArray(body.students))await assignSkill(db,String(saved.data),body.students.map(String));
  revalidatePath('/');revalidatePath('/tutor');return {id:saved.data,name:file.name};
 }

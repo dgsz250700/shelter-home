@@ -4,7 +4,7 @@ import type { Skill, CustomQuestion, Level } from "@/lib/engine/types";
 import {familyLabels,generatedFamilies,subjectFamily} from "@/lib/engine/families";
 import {ExerciseDiagram} from "@/components/game/exercise-visual";
 import { generate } from "@/lib/engine/exercises";
-import { saveSkill, removeSkill, saveNote } from "@/lib/data/tutor-actions";
+import { saveSkill, removeSkill, saveNote, skillAudience } from "@/lib/data/tutor-actions";
 import {QuestionImageInput} from "./question-image-input";
 import { QuestionStudio } from "./question-studio";
 import { ImageViewer } from "@/components/game/image-viewer";
@@ -20,6 +20,18 @@ const blank = (): DraftQuestion => ({
   level: 3,
   answerFormat: "number",
 });
+// Who sees this practice in their refuge. None checked means every student.
+function SkillAudience({skillId}:{skillId?:string}){
+  const [audience,setAudience]=useState<{students:{id:string;name:string}[];assigned:string[]}|null>(null);
+  useEffect(()=>{let live=true;skillAudience(skillId).then(a=>{if(live)setAudience(a);}).catch(()=>{if(live)setAudience({students:[],assigned:[]});});return()=>{live=false;};},[skillId]);
+  if(!audience)return <fieldset className="audience-picker"><legend>Para quién</legend><p>Cargando estudiantes…</p></fieldset>;
+  if(audience.students.length<2)return null;
+  return <fieldset className="audience-picker"><legend>Para quién</legend>
+    <input type="hidden" name="assign" value="1"/>
+    <div>{audience.students.map(s=><label key={s.id}><input type="checkbox" name="students" value={s.id} defaultChecked={audience.assigned.includes(s.id)}/>{s.name}</label>)}</div>
+    <p>Sin marcar, la ven todos los estudiantes.</p>
+  </fieldset>;
+}
 export function SkillEditor({ skill, draft, onSaved, importOpen=false }: { importOpen?:boolean; onSaved?: () => void; skill?: Skill; draft?: { name:string; description:string; classTopic?:string; subject:string; questions:CustomQuestion[] } }) {
   const [uploads,setUploads]=useState<Record<string,boolean>>({});
   const notified=useRef("");
@@ -70,17 +82,19 @@ export function SkillEditor({ skill, draft, onSaved, importOpen=false }: { impor
             <select
               name="subject"
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={(e) => {setSubject(e.target.value);if(e.target.value==="musica")setMode("custom");}}
             >
               <option value="matematicas">Matemáticas</option>
               <option value="fisica">Física</option>
               <option value="quimica">Química</option>
+              <option value="musica">Música</option>
             </select>
           </label>
         </div>
+        <SkillAudience skillId={skill?.id}/>
         <details className="editor-settings"><summary>Objetivo y planificación (opcional)</summary><div className="form-grid">
           <label className="full-width">
-            Qué quieres que practique Laura
+            Qué quieres que practique
             <textarea
               name="description"
               defaultValue={skill?.description ?? draft?.description}
@@ -140,8 +154,8 @@ export function SkillEditor({ skill, draft, onSaved, importOpen=false }: { impor
             onChange={(e) => setMode(e.target.value)}
           >
             <option value="custom">Mis propias preguntas y pistas</option>
-            <option value="generated">
-              Ejercicios automáticos por microhabilidad
+            <option value="generated" disabled={subject==="musica"}>
+              Ejercicios automáticos por microhabilidad{subject==="musica"?" (no disponible en música)":""}
             </option>
           </select>
         </label>

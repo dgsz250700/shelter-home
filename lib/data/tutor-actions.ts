@@ -1,11 +1,20 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { tutorDatabase } from "./tutor-auth";
+import { assignSkill } from "./skill-audience";
 import type { CustomQuestion } from "@/lib/engine/types";
 import {isGeneratedFamily,subjectFamily} from "@/lib/engine/families";
 import {validateDriveBank} from "@/lib/engine/drive-bank";
 import {validateQuestions} from "@/lib/engine/import-questions";
 type ActionState = { error: string; success: string; id?: string };
+export async function skillAudience(skillId?:string):Promise<{students:{id:string;name:string}[];assigned:string[]}>{
+  const db=await tutorDatabase();
+  const [{data:students},{data:rows}]=await Promise.all([
+    db.from("profiles").select("id,display_name").eq("role","student").order("created_at"),
+    skillId?db.from("skill_students").select("user_id").eq("skill_id",skillId):Promise.resolve({data:[] as {user_id:string}[]}),
+  ]);
+  return {students:(students??[]).map(s=>({id:String(s.id),name:String(s.display_name)})),assigned:(rows??[]).map(r=>String(r.user_id))};
+}
 export async function saveSkill(
   _previous: ActionState,
   form: FormData,
@@ -19,13 +28,14 @@ export async function saveSkill(
     const mode = String(form.get("mode") ?? "generated");
     const family=String(form.get("family")??subjectFamily(subject));
     if(mode!=="custom"&&!isGeneratedFamily(family))return {error:"Selecciona un generador disponible.",success:""};
+    if(subject==="musica"&&mode!=="custom")return {error:"Para música usa tus propias preguntas: todavía no hay un generador de música.",success:""};
     const priority = Number(form.get("priority"));
     const difficulty = Number(form.get("difficulty"));
     if (
       !name ||
       name.length > 100 ||
       !description ||
-      !["matematicas", "fisica", "quimica"].includes(subject) ||
+      !["matematicas", "fisica", "quimica", "musica"].includes(subject) ||
       !Number.isInteger(priority) ||
       priority < 1 ||
       priority > 10 ||
@@ -98,12 +108,13 @@ export async function saveSkill(
     }));
     const saved=await db.rpc("save_skill_atomic",{p_id:id || String(form.get("clientId") || crypto.randomUUID()),p_values:{...values,is_test:process.env.NODE_ENV!=="production"},p_levels:levels});
     if(saved.error)throw new Error("No se guardaron cambios. Tus preguntas siguen aquí; vuelve a intentarlo.");
+    if(form.get("assign")==="1")await assignSkill(db,String(saved.data),form.getAll("students").map(String));
     revalidatePath("/tutor");
     revalidatePath("/");
     return {
       error: "",
       id: String(saved.data),
-      success: values.active ? "Preguntas guardadas. Disponibles para Laura." : "Borrador guardado. Puedes activarlo cuando quieras.",
+      success: values.active ? "Preguntas guardadas. Ya están disponibles en el refugio." : "Borrador guardado. Puedes activarlo cuando quieras.",
     };
   } catch (error) {
     return {
