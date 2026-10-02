@@ -1,7 +1,8 @@
 """Normalize a hand-made cat sprite sheet into an even strip of frames.
 
 Usage: python scripts/build-cat-sprite.py <input> <output.webp>
-Each cat in the source becomes one frame, ordered left to right. Frames share
+Each cat in the source becomes one frame, read row by row, left to right.
+Small blobs such as frame numbers drawn on the sheet are discarded. Frames share
 the same cell size, ground line and horizontal anchor (the paws) so a CSS
 steps() animation loops without jumping. Prints the frame metadata as JSON.
 """
@@ -26,6 +27,10 @@ owner = core[iy, ix]
 clean = alpha.astype(np.int32)
 clean[clean < 14] = 0
 clean[clean > 236] = 255
+# Drop anything not attached to a cat (labels, numbers, specks).
+blobs, _ = ndimage.label(clean > 0)
+cat_blobs = np.unique(blobs[core > 0])
+clean[~np.isin(blobs, cat_blobs[cat_blobs > 0])] = 0
 
 frames = []
 for label in keep:
@@ -37,7 +42,15 @@ for label in keep:
     feet = np.where(solid[ground - 30:ground + 1].any(axis=0))[0]
     anchor = int(round(feet.mean()))
     frames.append(dict(label=label, top=top, bottom=bottom, left=left, right=right, ground=ground, anchor=anchor))
-frames.sort(key=lambda f: f['left'])
+frames.sort(key=lambda f: f['ground'])
+rows, row = [], []
+for f in frames:
+    if row and f['ground'] - row[-1]['ground'] > 60:
+        rows.append(row)
+        row = []
+    row.append(f)
+rows.append(row)
+frames = [f for r in rows for f in sorted(r, key=lambda f: f['left'])]
 
 pad = 8
 half = max(max(f['anchor'] - f['left'], f['right'] - f['anchor']) for f in frames) + pad
