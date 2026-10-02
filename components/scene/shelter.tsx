@@ -74,22 +74,14 @@ export function Shelter({
       </div>
       {celebration && <div key={celebration.id} className="reward-note" role="status"><Icon name="paw"/><span>{celebration.catName&&<b>{celebration.catName}: </b>}{rewardCopy[celebration.reward].delivered}</span></div>}
       {selected && (
-        <div
-          className="cat-story"
-          role="dialog"
-          aria-label={`Historia de ${selected.name}`}
-        >
-          <button
-            className="icon-button"
-            aria-label="Cerrar historia"
-            onClick={() => setSelected(null)}
-          >
-            <Icon name="close" />
+        <div className="cat-story cat-energy-card" role="dialog" aria-label={`Energía de ${selected.name}`}>
+          <button className="icon-button" aria-label="Cerrar" onClick={() => setSelected(null)}>
+            <Icon name="close" size={18} />
           </button>
-          <div className="story-portrait"><CatArt cat={selected}/></div>
-          <strong>{selected.name} te saluda</strong>
-          <span>{selected.personality}</span>
-          <p>{selected.story}</p><p className="cat-wellbeing">{feedingUnlocked ? "El cuidado del refugio ya está listo por hoy." : "Espera tus cuidados de hoy. Logra el reto para ayudarle."}</p>{energy<100&&<small>Energía: {energy}/100. El reto logrado la recupera.</small>}
+          {/* In the courtyard a tap only shows how the cat feels; its story lives in Mis gatos. */}
+          <strong>{selected.name}</strong>
+          <span className="cat-energy"><Icon name="heart" size={14} />Energía <b>{energy}%</b></span>
+          <progress aria-label={`Energía de ${selected.name}`} value={energy} max={100} />
         </div>
       )}
     </div>
