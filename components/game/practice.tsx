@@ -48,7 +48,10 @@ export function Practice({
   const [busy, setBusy] = useState(false);
   const [solved, setSolved] = useState(currentAttempts.some(a=>a.correct));
   const [wrong, setWrong] = useState(currentAttempts.some(a=>!a.correct));
-  const [review, setReview] = useState(false);
+  // One chance per question; the last two, the hardest, get two. After the last miss the answer is shown.
+  const chancesFor=(step:number)=>step>=8?2:1;
+  const [misses, setMisses] = useState(currentAttempts.filter(a=>!a.correct).length);
+  const [review, setReview] = useState(!currentAttempts.some(a=>a.correct)&&currentAttempts.filter(a=>!a.correct).length>=chancesFor(Math.min(9,resumed.completedSeeds.length)));
   const [flash, setFlash] = useState<{kind:"good"|"bad";seed:string}|null>(null);
   const [result, setResult] = useState<Completion | null>(null);
   const [skillResults, setSkillResults] = useState<
@@ -180,8 +183,16 @@ export function Practice({
       } else {
         if (!wrong) setItems((old) => reinforce(old, index).slice(0, 10));
         setWrong(true);
-        setHint((h) => Math.min(3, h + 1));
-        setMessage(exercise.hints[Math.min(hint, 2)]);
+        const missed=misses+1;
+        setMisses(missed);
+        if(missed>=chancesFor(index)){
+          track("solution_viewed",{step:index,reason:"no_chances_left"},{sessionId,skillId:skill.id});
+          setMessage("");
+          setReview(true);
+        }else{
+          setHint((h) => Math.min(3, h + 1));
+          setMessage(`${exercise.hints[Math.min(hint, 2)]} Te queda una oportunidad.`);
+        }
       }
     } catch {
       track("save_failed",{reason:"attempt",step:index},{sessionId,skillId:skill.id});
@@ -202,7 +213,7 @@ export function Practice({
         const completion=await completeMission(sessionId,correct,sessionTime.read()+resumed.attempts.reduce((sum,a)=>sum+a.response_ms,0));
         setResult(completion);onReward(completion.state);onStep(10);
       } else {
-        setIndex(n=>n+1);onStep(index+1);setAnswer("");cursor.current=null;setHint(0);setMessage("");setSolved(false);setWrong(false);setReview(false);
+        setIndex(n=>n+1);onStep(index+1);setAnswer("");cursor.current=null;setHint(0);setMessage("");setSolved(false);setWrong(false);setMisses(0);setReview(false);
       }
     } catch {setMessage("Tu avance sigue aquí. Toca el botón de nuevo para guardarlo.");}
     finally {gate.current=false;setBusy(false);}
