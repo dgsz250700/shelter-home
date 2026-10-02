@@ -4,7 +4,7 @@ import {useCatLife} from "./use-cat-life";
 import {rewardCopy, type CareReward} from "@/lib/engine/challenge";
 import {careEnergy} from "@/lib/engine/care";
 import Image from "next/image";
-import { useState, type KeyboardEvent } from "react";
+import { useState, type CSSProperties, type KeyboardEvent } from "react";
 import type { ShelterCat } from "@/lib/data/shelter";
 import type { ShelterState } from "@/lib/engine/types";
 import { CatArt } from "./cat-art";
@@ -56,7 +56,7 @@ export function Shelter({
       <div className="room-cats">
         {cats.map((cat, index) => (
           <button
-            key={cat.id} data-cat-id={cat.id} data-pose="idle"
+            key={cat.id} data-cat-id={cat.id} data-pose="idle" style={{"--sprite-delay":`${-index*2.3}s`} as CSSProperties}
             className={`room-cat cat-${index % 7} personality-${cat.personality.normalize("NFD").replace(/[\u0300-\u036f]/g,"")} ${selected?.id === cat.id ? "patted" : ""}`}
             data-track={`cat_${cat.id}`} aria-label={`Conocer a ${cat.name}`}
             onClick={() => {

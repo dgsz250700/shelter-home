@@ -6,6 +6,10 @@ import {chooseActivity,places,type CatMotion,type Point} from './cat-behavior';
 import {canStand,clearSegment,footprintAt,routeTo,type Obstacle,type Footprint} from './cat-navigation';
 import {spriteFor} from '@/lib/engine/cat-sprites';
 type Resident=CatMotion&{route:Point[];object?:string;blocked:number};
+// Resting spots for cats that stay in place, spread across the courtyard at different depths (y = feet line).
+const SPOTS:Point[]=[{x:.34,y:.8},{x:.64,y:.64},{x:.8,y:.9},{x:.46,y:.6},{x:.18,y:.72},{x:.58,y:.95},{x:.86,y:.66}];
+// Farther back means smaller: perspective scale from the feet line.
+const depthScale=(y:number)=>Math.min(1.08,Math.max(.72,.72+(y-.55)/.4*.36));
 export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|undefined,paused:boolean,celebration:{reward:CareReward;id:string;catId?:string}|null,interaction:{object:string;id:string}|null=null) {
  const room=useRef<HTMLDivElement>(null);
  const state=useRef({selected,paused,celebration,hasBed,interaction});
@@ -17,8 +21,10 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
   let width=1,height=1,visible=true,frame=0,last=0,lastGift='',lastInteraction='',lastSelected:string|undefined;
   let furniture:Obstacle[]=[],sizes:Footprint[]=[],objects=new Map<string,Point>();
   const motion:Resident[]=[];
-  // Sprite cats play their loop in one spot instead of walking around.
-  const stays=cats.map(cat=>Boolean(spriteFor(cat.name)));
+  // Sprite cats play their loop in one spot; those with a walk cycle stroll between resting spots.
+  const sprites=cats.map(cat=>spriteFor(cat.name));
+  const strolls=sprites.map(sprite=>Boolean(sprite?.walk));
+  const stays=sprites.map(sprite=>Boolean(sprite&&!sprite.walk));
   function measure(){
    if(!root||!root.clientWidth||!root.clientHeight)return;
    width=root.clientWidth;height=root.clientHeight;const bounds=root.getBoundingClientRect();
@@ -34,7 +40,7 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
    cats.forEach((_,i)=>{
     const occupied=[...furniture,...motion.map((m,j)=>footprintAt(m.position,sizes[j]))];
     const positions:Point[]=[];for(let y=.94;y>=.55;y-=.035)for(let x=.12;x<=.9;x+=.035)positions.push({x,y});
-    const preferred={x:.35+(i%3)*.21,y:.72+Math.floor(i/3)*.16};
+    const preferred=sprites[i]?SPOTS[cats.slice(0,i).filter((_,j)=>sprites[j]).length%SPOTS.length]:{x:.35+(i%3)*.21,y:.72+Math.floor(i/3)*.16};
     positions.sort((a,b)=>Math.hypot(a.x-preferred.x,a.y-preferred.y)-Math.hypot(b.x-preferred.x,b.y-preferred.y));
     const position=positions.find(p=>canStand(p,sizes[i],occupied))??preferred;
     motion.push({position,target:position,pose:'idle',arrival:'idle',remaining:1+i*.7,direction:1,route:[],blocked:0});
@@ -42,7 +48,7 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
   }
   function obstacles(i:number,reserve=false){return [...furniture,...motion.flatMap((m,j)=>j===i?[]:[footprintAt(m.position,sizes[j]),...(reserve&&m.route.length?[footprintAt(m.target,sizes[j])]:[])])];}
   function send(i:number,target:Point,arrival:CatMotion['arrival'],duration:number,object?:string){
-   const m=motion[i];if(stays[i])return;if(object&&motion.some((other,j)=>j!==i&&other.object===object)){m.remaining=2;return;}
+   const m=motion[i];if(stays[i]||(strolls[i]&&object))return;if(object&&motion.some((other,j)=>j!==i&&other.object===object)){m.remaining=2;return;}
    const route=routeTo(m.position,target,sizes[i],obstacles(i,true));
    if(!route.length){m.remaining=2;return;}
    const destination=route.at(-1)!;
@@ -68,20 +74,28 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
     if(state.current.interaction&&state.current.interaction.id!==lastInteraction){
      lastInteraction=state.current.interaction.id;
      const key=state.current.interaction.object,target=objects.get(key);
-     const walkers=target?motion.map((cat,i)=>({i,distance:Math.hypot(cat.position.x-target.x,cat.position.y-target.y)})).filter(({i})=>!stays[i]):[];
+     const walkers=target?motion.map((cat,i)=>({i,distance:Math.hypot(cat.position.x-target.x,cat.position.y-target.y)})).filter(({i})=>!sprites[i]):[];
      if(target&&walkers.length){const nearest=walkers.sort((a,b)=>a.distance-b.distance)[0];send(nearest.i,target,['bed','basket'].includes(key)?'sleep':['food','treat'].includes(key)?'eat':key==='vet'?'happy':'play',8,key);}
     }
     if(state.current.selected!==lastSelected){lastSelected=state.current.selected;const i=cats.findIndex(c=>c.id===lastSelected);if(i>=0){motion[i].pose='happy';motion[i].route=[];motion[i].object=undefined;motion[i].remaining=4;}}
     motion.forEach((m,i)=>{
      const node=nodes[i];if(!node)return;
      if(!reduced.matches){
-      if(m.pose==='walk'&&m.route.length){
+      // A tapped sprite cat shows its reaction for a moment, then rests again.
+      if(sprites[i]&&m.pose==='happy'&&state.current.selected!==cats[i].id){m.remaining-=delta;if(m.remaining<=0){m.pose='idle';m.remaining=3;}}
+      else if(m.pose==='walk'&&m.route.length){
        const next=m.route[0],dx=(next.x-m.position.x)*width,dy=(next.y-m.position.y)*height,distance=Math.hypot(dx,dy),step=delta*(cats[i].personality==='juguetón'?48:32);
        const factor=Math.min(1,step/Math.max(.001,distance));const candidate={x:m.position.x+dx/width*factor,y:m.position.y+dy/height*factor};
        if(clearSegment(m.position,candidate,sizes[i],obstacles(i))){
         m.position=candidate;m.blocked=0;if(Math.abs(dx)>1)m.direction=dx>0?1:-1;
         if(distance<=step){m.route.shift();if(!m.route.length){m.pose=m.arrival;const object=m.object?objects.get(m.object):undefined;if(object)m.direction=object.x>m.position.x?1:-1;}}
        }else{m.blocked+=delta;if(m.blocked>1){m.route=[];m.pose='idle';m.remaining=.5+Math.random();m.object=undefined;m.blocked=0;}}
+      }else if(strolls[i]&&state.current.selected!==cats[i].id){
+       m.remaining-=delta;if(m.remaining<=0){
+        const free=SPOTS.filter(spot=>Math.hypot(spot.x-m.position.x,spot.y-m.position.y)>.15&&motion.every((other,j)=>j===i||Math.hypot(spot.x-other.position.x,spot.y-other.position.y)>.12));
+        if(free.length&&Math.random()<.6)send(i,free[Math.floor(Math.random()*free.length)],'idle',8+Math.random()*6);
+        else m.remaining=6+Math.random()*6;
+       }
       }else if(state.current.selected!==cats[i].id&&!stays[i]){
        m.remaining-=delta;if(m.remaining<=0){
         m.object=undefined;
@@ -94,7 +108,7 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
        }
       }
      }
-     node.style.transform=`translate3d(${width*m.position.x-node.offsetWidth/2}px,${height*m.position.y-node.offsetHeight}px,0)`;
+     node.style.transform=`translate3d(${width*m.position.x-node.offsetWidth/2}px,${height*m.position.y-node.offsetHeight}px,0) scale(${depthScale(m.position.y)})`;
      node.style.zIndex=String(Math.round(m.position.y*100));node.dataset.pose=m.pose;node.style.setProperty('--facing',String(m.direction));
     });
     root!.dataset.ball=motion.some(m=>m.pose==='play'&&['ball','yarn'].includes(m.object??''))?'playing':'still';

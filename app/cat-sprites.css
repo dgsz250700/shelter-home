@@ -1,6 +1,14 @@
 /* Animated sprite cats: one row of equal frames. Each sprite gets its own keyframes (see spriteKeyframes) with a still rest before it plays. */
 .illustrated-cat.sprite-cat{display:flex;align-items:flex-end;justify-content:center;animation:none}
-.illustrated-cat>.cat-sprite{display:block;width:100%;background-repeat:no-repeat;background-size:calc(var(--frames)*100%) 100%;animation-duration:var(--loop);animation-timing-function:steps(var(--frames),jump-none);animation-iteration-count:infinite;animation-direction:var(--direction,normal)}
+.illustrated-cat>.cat-sprite{display:block;width:100%;background-repeat:no-repeat;background-size:calc(var(--frames)*100%) 100%;animation-duration:var(--loop);animation-timing-function:steps(var(--frames),jump-none);animation-iteration-count:infinite;animation-direction:var(--direction,normal);animation-delay:var(--sprite-delay,0s)}
 [data-motion=off] .illustrated-cat>.cat-sprite{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){.illustrated-cat>.cat-sprite{animation:none!important}}
 .illustrated-cat>.cat-portrait{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%}
+/* Cats with a walk cycle swap sheets while the courtyard moves them. */
+.illustrated-cat>.cat-sprite.walk{display:none;flex:none}
+[data-pose=walk] .illustrated-cat>.cat-sprite.walk{display:block}
+[data-pose=walk] .illustrated-cat>.cat-sprite.idle{display:none}
+/* A reaction sheet plays once each time the cat is tapped (the courtyard sets data-pose=happy), then holds its last frame. */
+.illustrated-cat>.cat-sprite.react{display:none;flex:none;animation-iteration-count:1;animation-fill-mode:forwards;animation-delay:0s}
+[data-pose=happy] .illustrated-cat:has(>.react)>.cat-sprite:not(.react){display:none}
+[data-pose=happy] .illustrated-cat>.cat-sprite.react{display:block}
