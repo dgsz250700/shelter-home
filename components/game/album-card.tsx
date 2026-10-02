@@ -5,15 +5,16 @@ import {CatArt} from '@/components/scene/cat-art';
 import {Icon} from './icons';
 const adoptedOn=new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'long',timeZone:'America/Bogota'});
 // One small collectible card in Laura's cat album; tapping it opens the full card with the story.
-export function AlbumCard({cat,number}:{cat:ShelterCat;number:number}) {
+export function AlbumCard({cat}:{cat:ShelterCat}) {
  const dialog=useRef<HTMLDialogElement>(null);
  const cares=cat.careCount??0;
- const label=`Nº ${String(number).padStart(2,'0')}`;
+ // The streak Laura reached when this cat arrived, shown like an achievement.
+ const badge=cat.arrivalStreak?<span className="album-number" aria-label={`Llegó con ${cat.arrivalStreak} ${cat.arrivalStreak===1?'día':'días'} de racha`}>{cat.arrivalStreak}<Icon name="fire" size={12}/></span>:null;
  const tint={'--cat-body':cat.palette.body,'--cat-belly':cat.palette.belly} as CSSProperties;
  return <>
   <button type="button" className={`album-card ${cat.adoptedAt?'adopted':''}`} style={tint} onClick={()=>dialog.current?.showModal()} aria-haspopup="dialog" aria-label={`Ver la lámina de ${cat.name}`}>
    <span className="album-photo">
-    <span className="album-number">{label}</span>
+    {badge}
     <CatArt cat={cat} still/>
     {cat.adoptedAt&&<span className="album-stamp"><Icon name="home" size={12}/></span>}
    </span>
@@ -22,7 +23,7 @@ export function AlbumCard({cat,number}:{cat:ShelterCat;number:number}) {
   <dialog ref={dialog} className="album-detail" style={tint} aria-label={`Lámina de ${cat.name}`} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close();}}>
    <button type="button" className="icon-button album-close" aria-label="Cerrar lámina" onClick={()=>dialog.current?.close()}><Icon name="close"/></button>
    <div className="album-photo">
-    <span className="album-number">{label}</span>
+    {badge}
     <CatArt cat={cat} still/>
     {cat.adoptedAt&&<span className="album-stamp"><Icon name="home" size={14}/>Con hogar</span>}
    </div>

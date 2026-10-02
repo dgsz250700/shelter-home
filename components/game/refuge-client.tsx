@@ -176,9 +176,9 @@ export function RefugeClient({
                   <h2>Gatitos rescatados</h2>
                   {liveCats.length===0&&<p>El primer reto logrado abre las puertas del refugio.</p>}
                   <div className="album">
-                    {residents.map((cat) => <AlbumCard key={cat.id} cat={cat} number={liveCats.indexOf(cat)+1}/>)}
+                    {residents.map((cat) => <AlbumCard key={cat.id} cat={cat}/>)}
                   </div>
-                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="album">{alumni.map(cat=><AlbumCard key={cat.id} cat={cat} number={liveCats.indexOf(cat)+1}/>)}</div></div>}
+                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="album">{alumni.map(cat=><AlbumCard key={cat.id} cat={cat}/>)}</div></div>}
                 </section>
               )}
               {view === "skills" && (
@@ -241,14 +241,14 @@ export function RefugeClient({
                 }
                 setLiveState(result.state);
                 if(result.reward)setCelebration({reward:result.reward,id:session.sessionId,catId:result.careCat?.id,catName:result.careCat?.name});
-                if(result.careCat)setLiveCats(previous=>previous.map(cat=>cat.id===result.careCat?.id?result.careCat:cat));
+                if(result.careCat)setLiveCats(previous=>previous.map(cat=>cat.id===result.careCat?.id?{...cat,...result.careCat}:cat));
                 setLiveRewards(result.rewards);
-                if(result.adopted){setAdoption(result.adopted);setLiveCats(previous=>previous.map(cat=>cat.id===result.adopted?.id?result.adopted:cat));}
+                if(result.adopted){setAdoption(result.adopted);setLiveCats(previous=>previous.map(cat=>cat.id===result.adopted?.id?{...cat,...result.adopted}:cat));}
                 if (result.cat)
                   setLiveCats((previous) =>
                     previous.some((c) => c.id === result.cat?.id)
                       ? previous
-                      : [...previous, result.cat!],
+                      : [...previous, {...result.cat!, arrivalStreak: result.streak.current}],
                   );
                 setSession(null);
                 router.refresh();

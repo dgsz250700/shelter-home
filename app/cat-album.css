@@ -6,7 +6,7 @@
 .album-card:focus-visible{outline:3px solid #2448aa;outline-offset:2px}
 .album-photo{position:relative;display:block;aspect-ratio:1;padding:8px 8px 0;background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--cat-belly) 70%,#fff) 0 38%,color-mix(in srgb,var(--cat-body) 34%,#fff4e2) 72%)}
 .album-photo>.illustrated-cat{width:100%;height:100%}
-.album-number{position:absolute;left:6px;top:6px;z-index:1;font-size:10px;font-weight:800;letter-spacing:.05em;color:#17394a;background:#fffdf8d9;border-radius:99px;padding:2px 7px}
+.album-number{position:absolute;left:6px;top:6px;z-index:1;display:flex;align-items:center;gap:2px;font-size:12px;font-weight:800;color:#17394a;background:#fffdf8e6;border-radius:99px;padding:2px 7px 2px 8px}
 .album-stamp{position:absolute;right:6px;top:6px;z-index:1;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#fff;background:#2f7d42;border-radius:99px;padding:4px 7px;transform:rotate(4deg)}
 .album-info{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px 10px;border-top:2px dashed color-mix(in srgb,var(--cat-body) 30%,#eadfca)}
 .album-info strong{font-size:16px;line-height:1.15;color:#17394a}
@@ -30,3 +30,4 @@
 @media(prefers-reduced-motion:reduce){.album-card,.album-detail[open]{transition:none;animation:none}}
 .album-detail-info .album-favorite{display:flex;align-items:center;gap:6px;font-size:15px;color:#17394a;background:color-mix(in srgb,var(--cat-body) 14%,#fff);border-radius:10px;padding:6px 12px}.album-favorite b{font-weight:800}
 .album-fav{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#17394a}.album-fav svg{color:#d9a032;flex:none}
+.album-number svg{color:#e8622c}

@@ -8,6 +8,15 @@ export async function openLauraShelter(): Promise<ShelterCat[]> {
     .select("unlocked_at,adopted_at,care_count,admitted,cats(id,slug,name,personality,story,palette,size,build,coat,tail,ears,pattern,accessories,trait_tags)")
     .eq("user_id", userId).eq("admitted",true);
   if (error) throw new Error("No pudimos cargar a los gatos.");
+  // The streak each cat arrived on: consecutive days with the daily challenge passed, up to its arrival day.
+  const passed = await db.from("sessions").select("date").eq("user_id", userId).eq("mode", "daily").eq("passed", true);
+  const days = new Set((passed.data ?? []).map((s) => String(s.date)));
+  const bogotaDay = (iso: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date(iso));
+  const streakOn = (day: string) => {
+    let count = 0;
+    for (const d = new Date(`${day}T12:00:00Z`); days.has(d.toISOString().slice(0, 10)); d.setUTCDate(d.getUTCDate() - 1)) count++;
+    return count;
+  };
   return (data ?? []).flatMap((row) => {
     const raw: unknown = row.cats;
     return (Array.isArray(raw) ? raw : [raw]).map((entry: unknown) => {
@@ -32,6 +41,7 @@ export async function openLauraShelter(): Promise<ShelterCat[]> {
         personality: String(c.personality),
         palette: { body: String(p.body), belly: String(p.belly) },
         unlockedAt: String(row.unlocked_at),
+        arrivalStreak: streakOn(bogotaDay(String(row.unlocked_at))) || undefined,
       };
     });
   }).sort((a,b)=>a.unlockedAt.localeCompare(b.unlockedAt));
