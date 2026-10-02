@@ -13,6 +13,7 @@ import "./question-library.css";
 import "./answer-feedback.css";
 import "./clean-question.css";
 import "./cat-sprites.css";
+import "./cat-album.css";
 export const metadata: Metadata = {
   title: "Refugio",
   description: "Un lugar pequeño para crecer juntos.",

@@ -1,0 +1,14 @@
+/* Mis gatos as a collectible album: one tinted card per cat. */
+.album{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;margin-top:16px}
+.album-card{display:flex;flex-direction:column;background:#fffdf8;border-radius:18px;overflow:hidden;box-shadow:0 1px 0 #e7dfcf,0 10px 26px #17394a14;border:3px solid #fff;outline:1px solid color-mix(in srgb,var(--cat-body) 35%,#e7dfcf)}
+.album-photo{position:relative;aspect-ratio:1;padding:14px 14px 0;background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--cat-belly) 70%,#fff) 0 38%,color-mix(in srgb,var(--cat-body) 34%,#fff4e2) 72%)}
+.album-photo>.illustrated-cat{width:100%;height:100%}
+.album-number{position:absolute;left:10px;top:10px;z-index:1;font-size:11px;font-weight:800;letter-spacing:.06em;color:#17394a;background:#fffdf8d9;border-radius:99px;padding:3px 9px}
+.album-stamp{position:absolute;right:10px;top:10px;z-index:1;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#fff;background:#2f7d42;border-radius:99px;padding:4px 10px;transform:rotate(4deg)}
+.album-info{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px;border-top:2px dashed color-mix(in srgb,var(--cat-body) 30%,#eadfca);flex:1}
+.album-info h3{font-size:22px;line-height:1.1;color:#17394a}
+.album-trait{align-self:flex-start;font-size:12px;font-weight:800;text-transform:capitalize;color:color-mix(in srgb,var(--cat-body) 55%,#17394a);background:color-mix(in srgb,var(--cat-body) 18%,#fff);border-radius:99px;padding:3px 10px}
+.album-info p{font-size:14px;line-height:1.5;color:#34495a;flex:1}
+.album-info small{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#8a4b3a}
+.album-card.adopted .album-photo{filter:saturate(.85)}
+@media(max-width:520px){.album{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.album-photo{padding:8px 8px 0}.album-info{padding:10px 12px 12px}.album-info h3{font-size:18px}.album-info p{font-size:12.5px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}

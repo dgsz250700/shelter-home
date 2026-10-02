@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import {track} from "@/components/telemetry/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CatArt } from "@/components/scene/cat-art";
 import { Shelter } from "@/components/scene/shelter";
 import type { ShelterCat, RewardStatus } from "@/lib/data/shelter";
 import type {
@@ -16,6 +15,7 @@ import type {
 import {RescueProgress} from "./rescue-progress";
 import {AdoptionMoment} from "./adoption-moment";
 import {MissionWelcome} from "./mission-welcome";
+import {AlbumCard} from "./album-card";
 import {PropTransparency} from "@/components/scene/refuge-prop";
 import {FreePractice} from "./free-practice";
 import {DAILY_CHANCES, nextCareReward, rewardCopy, careRecipient, type PracticeMode, type CareReward} from "@/lib/engine/challenge";
@@ -175,12 +175,10 @@ export function RefugeClient({
                 <section className="collection">
                   <h2>Tu pequeña familia</h2>
                   {liveCats.length===0&&<p>El primer reto logrado abre las puertas del refugio.</p>}
-                  <div className="cat-list">
-                    {residents.map((cat) => (
-                      <article key={cat.id}><div className="family-portrait"><CatArt cat={cat} still/></div><div className="family-story"><h3>{cat.name}</h3><span>{cat.personality}</span><p>{cat.story}</p><small>{cat.careCount??0} cuidados recibidos</small></div></article>
-                    ))}
+                  <div className="album">
+                    {residents.map((cat) => <AlbumCard key={cat.id} cat={cat} number={liveCats.indexOf(cat)+1}/>)}
                   </div>
-                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="cat-list">{alumni.map(cat=><article key={cat.id}><div className="family-portrait"><CatArt cat={cat} still/></div><div className="family-story"><h3>{cat.name}</h3><span>Adoptado el {new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'long',timeZone:'America/Bogota'}).format(new Date(cat.adoptedAt!))}</span><p>{cat.story}</p><small>Encontró un hogar gracias a tu constancia.</small></div></article>)}</div></div>}
+                  {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="album">{alumni.map(cat=><AlbumCard key={cat.id} cat={cat} number={liveCats.indexOf(cat)+1}/>)}</div></div>}
                 </section>
               )}
               {view === "skills" && (
