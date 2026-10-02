@@ -1,14 +1,30 @@
-/* Mis gatos as a collectible album: one tinted card per cat. */
-.album{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;margin-top:16px}
-.album-card{display:flex;flex-direction:column;background:#fffdf8;border-radius:18px;overflow:hidden;box-shadow:0 1px 0 #e7dfcf,0 10px 26px #17394a14;border:3px solid #fff;outline:1px solid color-mix(in srgb,var(--cat-body) 35%,#e7dfcf)}
-.album-photo{position:relative;aspect-ratio:1;padding:14px 14px 0;background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--cat-belly) 70%,#fff) 0 38%,color-mix(in srgb,var(--cat-body) 34%,#fff4e2) 72%)}
+/* Mis gatos as a collectible album: small tinted cards; tapping one opens the full card. */
+.album{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:14px;margin-top:16px}
+.album-card{display:flex;flex-direction:column;width:100%;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer;background:#fffdf8;border-radius:14px;overflow:hidden;box-shadow:0 1px 0 #e7dfcf,0 6px 16px #17394a14;border:3px solid #fff;outline:1px solid color-mix(in srgb,var(--cat-body) 35%,#e7dfcf);transition:transform .15s ease,box-shadow .15s ease}
+.album-card:hover{transform:translateY(-2px) rotate(-.6deg);box-shadow:0 1px 0 #e7dfcf,0 10px 22px #17394a22}
+.album-card:active{transform:scale(.97)}
+.album-card:focus-visible{outline:3px solid #2448aa;outline-offset:2px}
+.album-photo{position:relative;display:block;aspect-ratio:1;padding:8px 8px 0;background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--cat-belly) 70%,#fff) 0 38%,color-mix(in srgb,var(--cat-body) 34%,#fff4e2) 72%)}
 .album-photo>.illustrated-cat{width:100%;height:100%}
-.album-number{position:absolute;left:10px;top:10px;z-index:1;font-size:11px;font-weight:800;letter-spacing:.06em;color:#17394a;background:#fffdf8d9;border-radius:99px;padding:3px 9px}
-.album-stamp{position:absolute;right:10px;top:10px;z-index:1;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#fff;background:#2f7d42;border-radius:99px;padding:4px 10px;transform:rotate(4deg)}
-.album-info{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px;border-top:2px dashed color-mix(in srgb,var(--cat-body) 30%,#eadfca);flex:1}
-.album-info h3{font-size:22px;line-height:1.1;color:#17394a}
-.album-trait{align-self:flex-start;font-size:12px;font-weight:800;text-transform:capitalize;color:color-mix(in srgb,var(--cat-body) 55%,#17394a);background:color-mix(in srgb,var(--cat-body) 18%,#fff);border-radius:99px;padding:3px 10px}
-.album-info p{font-size:14px;line-height:1.5;color:#34495a;flex:1}
-.album-info small{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#8a4b3a}
+.album-number{position:absolute;left:6px;top:6px;z-index:1;font-size:10px;font-weight:800;letter-spacing:.05em;color:#17394a;background:#fffdf8d9;border-radius:99px;padding:2px 7px}
+.album-stamp{position:absolute;right:6px;top:6px;z-index:1;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#fff;background:#2f7d42;border-radius:99px;padding:4px 7px;transform:rotate(4deg)}
+.album-info{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:8px 10px 10px;border-top:2px dashed color-mix(in srgb,var(--cat-body) 30%,#eadfca)}
+.album-info strong{font-size:16px;line-height:1.15;color:#17394a}
+.album-trait{font-size:11px;font-weight:800;text-transform:capitalize;color:color-mix(in srgb,var(--cat-body) 55%,#17394a);background:color-mix(in srgb,var(--cat-body) 18%,#fff);border-radius:99px;padding:2px 8px}
 .album-card.adopted .album-photo{filter:saturate(.85)}
-@media(max-width:520px){.album{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.album-photo{padding:8px 8px 0}.album-info{padding:10px 12px 12px}.album-info h3{font-size:18px}.album-info p{font-size:12.5px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}
+/* The opened card. */
+.album-detail{margin:auto;width:min(380px,calc(100% - 32px));max-height:calc(100svh - 32px);overflow:auto;padding:0;border:4px solid #fff;border-radius:22px;background:#fffdf8;color:#17394a;box-shadow:0 24px 60px #09273d55;outline:1px solid color-mix(in srgb,var(--cat-body) 35%,#e7dfcf)}
+.album-detail::backdrop{background:#1839438a;backdrop-filter:blur(3px)}
+.album-detail[open]{animation:album-open .25s cubic-bezier(.2,1.2,.4,1)}
+.album-detail .album-photo{padding:18px 18px 0}
+.album-detail .album-number{left:12px;top:12px;font-size:12px;padding:3px 10px}
+.album-detail .album-stamp{right:52px;top:12px;padding:4px 10px}
+.album-close{position:absolute;right:8px;top:8px;z-index:2;background:#fffdf8d9}
+.album-detail-info{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:16px 20px 20px;border-top:2px dashed color-mix(in srgb,var(--cat-body) 30%,#eadfca)}
+.album-detail-info h3{font-size:28px;line-height:1.1}
+.album-detail-info .album-trait{font-size:13px;padding:3px 12px}
+.album-detail-info p{font-size:16px;line-height:1.6;color:#34495a}
+.album-detail-info small{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#8a4b3a}
+@keyframes album-open{from{opacity:0;transform:scale(.85) rotate(-2deg)}to{opacity:1;transform:none}}
+@media(max-width:520px){.album{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.album-info{padding:6px 8px 8px}.album-info strong{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.album-card,.album-detail[open]{transition:none;animation:none}}
