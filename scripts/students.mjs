@@ -1,13 +1,15 @@
 // Manage students without printing secrets.
 //   pnpm student:add "Name"   creates a student with an empty refuge and a new PIN
 //   pnpm student:pin "Name"   gives an existing student a new PIN
+//   pnpm student:pin "Name" 1234   sets a chosen 4-digit PIN
 // PINs are saved only to .env.students.json (ignored by Git); the database keeps a hash.
 import {createClient} from '@supabase/supabase-js';
 import {randomBytes,randomInt,scryptSync} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
 
-const [command,...rest]=process.argv.slice(2);
-const name=rest.join(' ').trim();
+const [command,...args]=process.argv.slice(2);
+const chosen=/^\d{4}$/.test(args.at(-1)??'')?args.pop():null;
+const name=args.join(' ').trim();
 if(!['add','pin'].includes(command)||!name){console.error('Uso: pnpm student:add "Nombre"  |  pnpm student:pin "Nombre"');process.exit(1);}
 const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
 if(!url||!key){console.error('Faltan NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en .env.local.');process.exit(1);}
@@ -42,7 +44,7 @@ if(command==='add'){
  student=found[0];
 }
 
-const pin=newPin();
+const pin=chosen??newPin();
 const access=await db.from('student_access').upsert({user_id:student.id,pin_hash:hashPin(pin),failed_attempts:0,locked_until:null,updated_at:new Date().toISOString()},{onConflict:'user_id'});
 if(access.error)throw access.error;
 const file=await saved();
