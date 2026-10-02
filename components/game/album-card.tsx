@@ -29,6 +29,7 @@ export function AlbumCard({cat,number}:{cat:ShelterCat;number:number}) {
    <div className="album-detail-info">
     <h3>{cat.name}</h3>
     <span className="album-trait">{cat.personality}</span>
+    {cat.favorite&&<p className="album-favorite"><Icon name="star" size={15}/><b>Favorito:</b> {cat.favorite}</p>}
     <p>{cat.story}</p>
     <small>{cat.adoptedAt?<><Icon name="home" size={14}/>Adoptado el {adoptedOn.format(new Date(cat.adoptedAt))}. Encontró un hogar gracias a tu constancia.</>:<><Icon name="heart" size={14}/>{cares} {cares===1?'cuidado recibido':'cuidados recibidos'}</>}</small>
    </div>

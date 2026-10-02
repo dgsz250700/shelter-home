@@ -28,3 +28,4 @@
 @keyframes album-open{from{opacity:0;transform:scale(.85) rotate(-2deg)}to{opacity:1;transform:none}}
 @media(max-width:520px){.album{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.album-info{padding:6px 8px 8px}.album-info strong{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.album-card,.album-detail[open]{transition:none;animation:none}}
+.album-detail-info .album-favorite{display:flex;align-items:center;gap:6px;font-size:15px;color:#17394a;background:color-mix(in srgb,var(--cat-body) 14%,#fff);border-radius:10px;padding:6px 12px}.album-favorite b{font-weight:800}
