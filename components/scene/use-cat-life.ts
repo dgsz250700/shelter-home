@@ -4,6 +4,7 @@ import type {ShelterCat} from '@/lib/data/shelter';
 import type {CareReward} from '@/lib/engine/challenge';
 import {chooseActivity,places,type CatMotion,type Point} from './cat-behavior';
 import {canStand,clearSegment,footprintAt,routeTo,type Obstacle,type Footprint} from './cat-navigation';
+import {spriteFor} from '@/lib/engine/cat-sprites';
 type Resident=CatMotion&{route:Point[];object?:string;blocked:number};
 export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|undefined,paused:boolean,celebration:{reward:CareReward;id:string;catId?:string}|null,interaction:{object:string;id:string}|null=null) {
  const room=useRef<HTMLDivElement>(null);
@@ -16,6 +17,8 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
   let width=1,height=1,visible=true,frame=0,last=0,lastGift='',lastInteraction='',lastSelected:string|undefined;
   let furniture:Obstacle[]=[],sizes:Footprint[]=[],objects=new Map<string,Point>();
   const motion:Resident[]=[];
+  // Sprite cats play their loop in one spot instead of walking around.
+  const stays=cats.map(cat=>Boolean(spriteFor(cat.name)));
   function measure(){
    if(!root||!root.clientWidth||!root.clientHeight)return;
    width=root.clientWidth;height=root.clientHeight;const bounds=root.getBoundingClientRect();
@@ -39,7 +42,7 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
   }
   function obstacles(i:number,reserve=false){return [...furniture,...motion.flatMap((m,j)=>j===i?[]:[footprintAt(m.position,sizes[j]),...(reserve&&m.route.length?[footprintAt(m.target,sizes[j])]:[])])];}
   function send(i:number,target:Point,arrival:CatMotion['arrival'],duration:number,object?:string){
-   const m=motion[i];if(object&&motion.some((other,j)=>j!==i&&other.object===object)){m.remaining=2;return;}
+   const m=motion[i];if(stays[i])return;if(object&&motion.some((other,j)=>j!==i&&other.object===object)){m.remaining=2;return;}
    const route=routeTo(m.position,target,sizes[i],obstacles(i,true));
    if(!route.length){m.remaining=2;return;}
    const destination=route.at(-1)!;
@@ -65,7 +68,8 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
     if(state.current.interaction&&state.current.interaction.id!==lastInteraction){
      lastInteraction=state.current.interaction.id;
      const key=state.current.interaction.object,target=objects.get(key);
-     if(target&&motion.length){const nearest=motion.map((cat,i)=>({i,distance:Math.hypot(cat.position.x-target.x,cat.position.y-target.y)})).sort((a,b)=>a.distance-b.distance)[0];send(nearest.i,target,['bed','basket'].includes(key)?'sleep':['food','treat'].includes(key)?'eat':key==='vet'?'happy':'play',8,key);}
+     const walkers=target?motion.map((cat,i)=>({i,distance:Math.hypot(cat.position.x-target.x,cat.position.y-target.y)})).filter(({i})=>!stays[i]):[];
+     if(target&&walkers.length){const nearest=walkers.sort((a,b)=>a.distance-b.distance)[0];send(nearest.i,target,['bed','basket'].includes(key)?'sleep':['food','treat'].includes(key)?'eat':key==='vet'?'happy':'play',8,key);}
     }
     if(state.current.selected!==lastSelected){lastSelected=state.current.selected;const i=cats.findIndex(c=>c.id===lastSelected);if(i>=0){motion[i].pose='happy';motion[i].route=[];motion[i].object=undefined;motion[i].remaining=4;}}
     motion.forEach((m,i)=>{
@@ -78,7 +82,7 @@ export function useCatLife(cats:ShelterCat[],hasBed:boolean,selected:string|unde
         m.position=candidate;m.blocked=0;if(Math.abs(dx)>1)m.direction=dx>0?1:-1;
         if(distance<=step){m.route.shift();if(!m.route.length){m.pose=m.arrival;const object=m.object?objects.get(m.object):undefined;if(object)m.direction=object.x>m.position.x?1:-1;}}
        }else{m.blocked+=delta;if(m.blocked>1){m.route=[];m.pose='idle';m.remaining=.5+Math.random();m.object=undefined;m.blocked=0;}}
-      }else if(state.current.selected!==cats[i].id){
+      }else if(state.current.selected!==cats[i].id&&!stays[i]){
        m.remaining-=delta;if(m.remaining<=0){
         m.object=undefined;
         const careObjects=['food','box','toy','yarn'].filter(key=>objects.has(key)&&!motion.some(other=>other.object===key));
