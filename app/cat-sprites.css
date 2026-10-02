@@ -1,0 +1,6 @@
+/* Animated sprite cats: one row of equal frames, played forward then back so the loop never jumps. */
+.illustrated-cat.sprite-cat{display:flex;align-items:flex-end;justify-content:center;animation:none}
+.illustrated-cat>.cat-sprite{display:block;width:100%;background-repeat:no-repeat;background-size:calc(var(--frames)*100%) 100%;animation:cat-sprite-loop var(--loop) steps(var(--frames),jump-none) infinite alternate}
+@keyframes cat-sprite-loop{from{background-position-x:0%}to{background-position-x:100%}}
+[data-motion=off] .illustrated-cat>.cat-sprite{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.illustrated-cat>.cat-sprite{animation:none}}
