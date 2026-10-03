@@ -8,7 +8,9 @@ export function driveFolderId(value:string){
 }
 export function validateDriveBank(value:unknown){
  const questions=validateQuestions(value,true);
- if(new Set(questions.map(q=>q.prompt.trim().toLowerCase())).size!==questions.length)throw new Error('Hay preguntas repetidas en el PDF. Revisa el banco.');
+ // Same wording is fine when the figure or the options differ (e.g. «¿Qué nota aparece?» over different staffs).
+ const key=(q:typeof questions[number])=>q.sourceNumber?`#${q.sourceNumber}`:[q.prompt.trim().toLowerCase(),q.image??'',(q.choices??[]).map(c=>c.label.toLowerCase()).join('|')].join('§');
+ if(new Set(questions.map(key)).size!==questions.length)throw new Error('Hay preguntas repetidas en el PDF. Revisa el banco.');
  for(const level of [1,2,3,4]){
   const required=DAILY_LEVELS.filter(l=>l===level).length;
   if(questions.filter(q=>q.level===level).length<required)throw new Error(`Faltan preguntas del nivel ${level-1}: necesitas al menos ${required}.`);
