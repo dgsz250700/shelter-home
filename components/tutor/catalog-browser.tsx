@@ -12,12 +12,7 @@ export function CatalogBrowser({skills,children}:{skills:Skill[];children:ReactN
  const skill=skills.find(s=>s.id===selected)??skills[0];
  const editors=Children.toArray(children);
  if(!skill)return <p>Añade tu primer temario desde Crear preguntas.</p>;
- return <div className="syllabus-library"><div className="syllabus-picker" role="group" aria-label="Elegir temario">{[...skills].sort((a,b)=>Number(Boolean(b.driveFileId))-Number(Boolean(a.driveFileId))).map(s=><div className="syllabus-item" key={s.id}><button type="button" aria-pressed={s.id===skill.id} onClick={()=>setSelected(s.id)}><SkillIcon skill={s}/><span><strong>{s.name}</strong><small>{s.questions?.length?`${s.questions.length} preguntas`:'Práctica generada'} · {s.active?'Activo':'En pausa'}</small></span></button><ActiveSwitch skill={s}/></div>)}</div><BankDetail key={skill.id} skill={skill}>{editors[skills.findIndex(s=>s.id===skill.id)]}</BankDetail></div>;
-}
-// Turn a microskill on or off without opening it.
-function ActiveSwitch({skill}:{skill:Skill}){
- const router=useRouter();const [pending,start]=useTransition();const [error,setError]=useState('');
- return <button type="button" role="switch" aria-checked={skill.active} aria-label={`${skill.active?'Pausar':'Activar'} ${skill.name}`} title={error||(skill.active?'Activa: aparece en el refugio':'En pausa: no aparece en el refugio')} className={`active-switch ${skill.active?'on':''} ${error?'failed':''}`} disabled={pending} onClick={()=>{setError('');start(async()=>{const result=await setBankActive(skill.id,!skill.active);if(result.error)setError(result.error);else router.refresh();});}}><span/></button>;
+ return <div className="syllabus-library"><div className="syllabus-picker" role="group" aria-label="Elegir temario">{[...skills].sort((a,b)=>Number(Boolean(b.driveFileId))-Number(Boolean(a.driveFileId))).map(s=><div className="syllabus-item" key={s.id}><button type="button" aria-pressed={s.id===skill.id} onClick={()=>setSelected(s.id)}><SkillIcon skill={s}/><span><strong>{s.name}</strong><small>{s.questions?.length?`${s.questions.length} preguntas`:'Práctica generada'} · {s.active?'Activo':'En pausa'}</small></span></button></div>)}</div><BankDetail key={skill.id} skill={skill}>{editors[skills.findIndex(s=>s.id===skill.id)]}</BankDetail></div>;
 }
 function BankDetail({skill,children}:{skill:Skill;children:ReactNode}) {
  const [level,setLevel]=useState(0),[format,setFormat]=useState('all'),[search,setSearch]=useState(''),[selected,setSelected]=useState(0),[error,setError]=useState(''),[pending,startTransition]=useTransition();

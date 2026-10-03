@@ -14,9 +14,10 @@ import { SkillEditor, NoteForm } from "@/components/tutor/skill-editor";
 import { AIInsights } from "@/components/tutor/ai-insights";
 import { aiOverview } from "@/lib/data/ai";
 import { Icon } from "@/components/game/icons";
-export default async function Tutor({ searchParams }: { searchParams: Promise<{ estudiante?: string }> }) {
+export default async function Tutor({ searchParams }: { searchParams: Promise<{ estudiante?: string; vista?: string }> }) {
   await requireTutor();
-  const data = await getTutorSummary((await searchParams).estudiante);
+  const params = await searchParams;
+  const data = await getTutorSummary(params.estudiante);
   const name = data.student.name;
   const [ai,usage] = await Promise.all([aiOverview(data.userId),usageData()]);
   const completed = data.sessions.filter((s) => s.completed);
@@ -54,7 +55,7 @@ export default async function Tutor({ searchParams }: { searchParams: Promise<{ 
           Nueva habilidad
         </a>
       </div>
-      <TutorWorkspace students={data.students} current={data.student.id}>
+      <TutorWorkspace students={data.students} current={data.student.id} initial={params.vista}>
       <DriveLibrary key={data.student.id} skills={data.skills} studentName={name}/>
 
       <section
