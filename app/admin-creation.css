@@ -20,3 +20,4 @@
 .active-switch.on span{transform:translateX(18px)}
 .active-switch.failed{outline:2px solid #d24a3c}
 .active-switch:focus-visible{outline:3px solid #2448aa;outline-offset:2px}
+.student-tabs{margin-bottom:28px}

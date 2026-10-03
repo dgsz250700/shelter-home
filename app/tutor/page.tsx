@@ -85,7 +85,7 @@ export default async function Tutor({ searchParams }: { searchParams: Promise<{ 
           Tus temarios <span>{data.skills.length}</span>
         </h2>
         <p>
-          Elige qué practica {name}. Explora cada pregunta y prueba sus respuestas antes de editar.
+          Elige qué practica {name}.
         </p>
         <CatalogBrowser key={data.student.id} skills={data.skills}>
         {data.skills.map((skill) => {
