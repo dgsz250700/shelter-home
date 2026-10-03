@@ -244,19 +244,14 @@ export async function askCoach(input: {
     throw error;
   }
 }
-export async function tutorReport(question = "") {
+export async function tutorReport(question = "", studentId?: string) {
   if (typeof question !== "string" || question.length > 2000) throw new Error("Escribe una consulta de hasta 2.000 caracteres.");
   const db = await tutorDatabase();
   const { data: auth } = await db.auth.getUser();
-  const { data: profile } = await db
-    .from("profiles")
-    .select("id")
-    .eq("role", "student")
-    .order("created_at")
-    .limit(1)
-    .single();
+  const { data: students } = await db.from("profiles").select("id").eq("role", "student").order("created_at");
+  const profile = students?.find((p) => p.id === studentId) ?? students?.[0];
   if (!auth.user || !profile)
-    throw new Error("No se encontró el perfil de Laura.");
+    throw new Error("No se encontró el perfil del estudiante.");
   const id = crypto.randomUUID();
   await reserveAI(id, auth.user.id, "report");
   try {

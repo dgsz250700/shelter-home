@@ -2,7 +2,8 @@ import { tutorReport } from "@/lib/data/ai";
 export const maxDuration = 90;
 export async function POST(request: Request) {
   try {
-    return Response.json(await tutorReport((await request.json().catch(() => ({})) as {question?: string}).question ?? ""));
+    const body = (await request.json().catch(() => ({}))) as { question?: string; studentId?: string };
+    return Response.json(await tutorReport(body.question ?? "", typeof body.studentId === "string" ? body.studentId : undefined));
   } catch (error) {
     return Response.json(
       {

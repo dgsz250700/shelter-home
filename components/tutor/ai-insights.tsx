@@ -7,7 +7,9 @@ export function AIInsights({
   initial,
   memory,
   messages,
+  studentId,
 }: {
+  studentId?: string;
   initial?: { body: string; created_at: string; evidence_count: number } | null;
   memory: string;
   messages: { role: string; content: string; created_at: string }[];
@@ -22,7 +24,7 @@ export function AIInsights({
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/tutor/report", { method: "POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({question}) });
+      const response = await fetch("/api/tutor/report", { method: "POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({question,studentId}) });
       const data = (await response.json()) as {
         report?: string;
         evidenceCount?: number;

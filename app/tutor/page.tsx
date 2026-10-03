@@ -14,9 +14,10 @@ import { SkillEditor, NoteForm } from "@/components/tutor/skill-editor";
 import { AIInsights } from "@/components/tutor/ai-insights";
 import { aiOverview } from "@/lib/data/ai";
 import { Icon } from "@/components/game/icons";
-export default async function Tutor() {
+export default async function Tutor({ searchParams }: { searchParams: Promise<{ estudiante?: string }> }) {
   await requireTutor();
-  const data = await getTutorSummary();
+  const data = await getTutorSummary((await searchParams).estudiante);
+  const name = data.student.name;
   const [ai,usage] = await Promise.all([aiOverview(data.userId),usageData()]);
   const completed = data.sessions.filter((s) => s.completed);
   const streak = data.streaks[0];
@@ -42,7 +43,7 @@ export default async function Tutor() {
       </header>
       <div className="admin-heading">
         <div>
-          <h1>La práctica de Laura</h1>
+          <h1>La práctica de {name}</h1>
           <p>
             Revisa su avance y prepara la siguiente microhabilidad.
           </p>
@@ -53,8 +54,8 @@ export default async function Tutor() {
           Nueva habilidad
         </a>
       </div>
-      <TutorWorkspace>
-      <DriveLibrary skills={data.skills}/>
+      <TutorWorkspace students={data.students} current={data.student.id}>
+      <DriveLibrary key={data.student.id} skills={data.skills} studentName={name}/>
 
       <section
         id="progress"
@@ -84,9 +85,9 @@ export default async function Tutor() {
           Tus temarios <span>{data.skills.length}</span>
         </h2>
         <p>
-          Elige qué practica Laura. Explora cada pregunta y prueba sus respuestas antes de editar.
+          Elige qué practica {name}. Explora cada pregunta y prueba sus respuestas antes de editar.
         </p>
-        <CatalogBrowser skills={data.skills}>
+        <CatalogBrowser key={data.student.id} skills={data.skills}>
         {data.skills.map((skill) => {
           const attempts = data.attempts.filter((a) => a.skill_id === skill.id);
           const mastery=data.mastery.find(m=>m.skill_id===skill.id);
@@ -133,7 +134,7 @@ export default async function Tutor() {
       </section>
       <section className="new-skill-section" id="new-skill">
         <PracticeLab skills={data.skills}/>
-        <details className="tutor-analysis"><summary>Análisis de Laura (opcional)</summary><AIInsights initial={ai.report} memory={ai.memory} messages={ai.messages}/></details>
+        <details className="tutor-analysis"><summary>Análisis de {name} (opcional)</summary><AIInsights key={data.student.id} studentId={data.student.id} initial={ai.report} memory={ai.memory} messages={ai.messages}/></details>
       </section>
       </TutorWorkspace>
     </main>

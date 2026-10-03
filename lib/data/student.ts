@@ -189,45 +189,38 @@ export async function finishSession(sessionId:string,_correctCount:number,durati
   const result=saved.data as {streak:Streak;cat:ShelterCat|null;adopted:ShelterCat|null;careCat:ShelterCat|null;rewards:RewardStatus;reward:CareReward|null;state:ShelterState;passed:boolean;correct:number;mode:PracticeMode;dailyTry:number};
   return {...result,streak:{...result.streak,current:visibleStreak(result.streak,dayKey())}};
 }
-export async function getTutorSummary() {
+// Everything the tutor panel shows, for one student (the first one unless another is chosen).
+export async function getTutorSummary(studentId?: string) {
   const db = await database();
-  const [skills, attempts, sessions, mastery, notes, streaks, profiles] =
+  const roster = await db.from("profiles").select("id,display_name").eq("role", "student").order("created_at");
+  if (roster.error || !roster.data?.length) throw new Error("No pudimos cargar el panel.");
+  const students = roster.data.map((p) => ({ id: String(p.id), name: String(p.display_name) }));
+  const student = students.find((s) => s.id === studentId) ?? students[0];
+  const [skills, assignments, attempts, sessions, mastery, notes, streaks] =
     await Promise.all([
-      db
-        .from("skills")
-        .select("*,skill_levels(description)")
-        .order("created_at"),
-      db
-        .from("attempts")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1000),
-      db.from("sessions").select("*").order("date", { ascending: false }),
-      db.from("skill_mastery").select("*"),
-      db
-        .from("tutor_notes")
-        .select("*")
-        .order("created_at", { ascending: false }),
-      db.from("streaks").select("*"),
-      db.from("profiles").select("id").eq("role", "student").order("created_at").limit(1).single(),
+      db.from("skills").select("*,skill_levels(description)").order("created_at"),
+      db.from("skill_students").select("skill_id,user_id"),
+      db.from("attempts").select("*").eq("user_id", student.id).order("created_at", { ascending: false }).limit(1000),
+      db.from("sessions").select("*").eq("user_id", student.id).order("date", { ascending: false }),
+      db.from("skill_mastery").select("*").eq("user_id", student.id),
+      db.from("tutor_notes").select("*").eq("user_id", student.id).order("created_at", { ascending: false }),
+      db.from("streaks").select("*").eq("user_id", student.id),
     ]);
-  if (
-    skills.error ||
-    attempts.error ||
-    sessions.error ||
-    mastery.error ||
-    notes.error ||
-    streaks.error ||
-    profiles.error
-  )
+  if (skills.error || assignments.error || attempts.error || sessions.error || mastery.error || notes.error || streaks.error)
     throw new Error("No pudimos cargar el panel.");
+  // A skill belongs to this student when it is assigned to them or to nobody.
+  const owners = new Map<string, string[]>();
+  for (const row of assignments.data ?? []) owners.set(String(row.skill_id), [...(owners.get(String(row.skill_id)) ?? []), String(row.user_id)]);
+  const visible = skills.data.filter((skill) => !owners.has(String(skill.id)) || owners.get(String(skill.id))!.includes(student.id));
   return {
-    skills: skills.data.map(prepareSkill),
+    skills: visible.map(prepareSkill),
     attempts: attempts.data as Attempt[],
     sessions: sessions.data,
     mastery: mastery.data as Mastery[],
     notes: notes.data,
     streaks: streaks.data,
-    userId: profiles.data.id,
+    userId: student.id,
+    student,
+    students,
   };
 }
