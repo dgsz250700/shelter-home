@@ -59,12 +59,14 @@ export type Evaluation =
   | { valid: false; message: string }
   | { valid: true; correct: boolean; errorType: string | null };
 export const normalizedText=(text:string)=>text.normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," ").replace(/[.!?]+$/,"");
+// Written answers: separators like "-", ",", "/" or "y" between words do not matter ("Re - Si" = "re si" = "Re, Si").
+export const looseText=(text:string)=>normalizedText(text).replace(/[-–—,;:/|·.]+/g," ").replace(/\sy\s/g," ").replace(/\s+/g," ").trim();
 export function evaluate(exercise: Exercise, input: string): Evaluation {
   if (input.length > 100)
     return { valid: false, message: "La respuesta es demasiado larga." };
   if(exercise.answerFormat === "text"){
     if(!input.trim())return {valid:false,message:"Escribe una respuesta corta."};
-    const correct=normalizedText(input)===normalizedText(exercise.answer);
+    const correct=looseText(input)===looseText(exercise.answer);
     return {valid:true,correct,errorType:correct?null:"RESPUESTA_CONCEPTUAL"};
   }
   if(exercise.answerFormat === "match"){
