@@ -35,11 +35,17 @@ export async function extractDriveQuestions(body:{fileId?:string;text?:string}){
     catch(error){const n=raw&&typeof raw==='object'&&Number.isInteger((raw as {sourceNumber?:unknown}).sourceNumber)?(raw as {sourceNumber:number}).sourceNumber:index+1;skipped.push(`Pregunta ${n}: ${(error instanceof Error?error.message:'formato inválido').replace(/^Pregunta \d+: /,'')} No se importó; revísala en el PDF.`);return [];}
    });
    if(questions.some(q=>!sourceContainsPrompt(body.text!,q.prompt)))throw new Error('La extracción cambió un enunciado. Reintenta o usa la importación manual; no se activó ningún cambio.');
-   if(questions.some(q=>q.level!==level))throw new Error('El PDF no distingue bien los niveles. Usa encabezados Nivel 0, Nivel 1, Nivel 2 y Nivel 3.');
+   // The AI sometimes numbers levels 0–3 instead of 1–4, or returns a question from another level:
+   // shift a consistent off-by-one, and leave stray questions to the pass of their own level.
+   if(questions.length&&questions.every(q=>q.level===level-1))for(const q of questions)q.level=level as typeof q.level;
+   questions.splice(0,questions.length,...questions.filter(q=>q.level===level));
    return {questions,issues:[...skipped,...(Array.isArray(data.issues)?data.issues.filter((x):x is string=>typeof x==='string').map(x=>x.slice(0,300)):[])],tokens:response.tokens,model:response.model};
   }));
   const failure=results.find(r=>r.status==='rejected');if(failure?.status==='rejected')throw failure.reason;
-  const done=results.flatMap(r=>r.status==='fulfilled'?[r.value]:[]),questions=done.flatMap(r=>r.questions);
+  const done=results.flatMap(r=>r.status==='fulfilled'?[r.value]:[]);
+  // A question read twice (in two passes) is kept once.
+  const seen=new Set<string>();
+  const questions=done.flatMap(r=>r.questions).filter(q=>{const key=q.sourceNumber?`#${q.sourceNumber}`:`${q.prompt}|${(q.choices??[]).map(c=>c.label).join('|')}`;if(seen.has(key))return false;seen.add(key);return true;});
   if(!questions.length)throw new Error('No encontramos preguntas con nivel y respuesta. Añade un solucionario al PDF y encabezados de nivel.');
   await completeAI(id,'completed',done[0].model,done.reduce((n,r)=>n+r.tokens,0));
   return {name:file.name.replace(/\.pdf$/i,'').slice(0,100),fileId:file.id,modifiedTime:file.modifiedTime,folderName:file.folderName,questions,issues:done.flatMap(r=>r.issues)};
