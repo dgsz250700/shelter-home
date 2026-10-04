@@ -11,8 +11,8 @@ export function CatalogBrowser({skills,children}:{skills:Skill[];children:ReactN
  const [selected,setSelected]=useState(skills.find(s=>s.driveFileId)?.id??skills[0]?.id??'');
  const skill=skills.find(s=>s.id===selected)??skills[0];
  const editors=Children.toArray(children);
- if(!skill)return <p>Añade tu primer temario desde Crear preguntas.</p>;
- return <div className="syllabus-library"><div className="syllabus-picker" role="group" aria-label="Elegir temario">{[...skills].sort((a,b)=>Number(Boolean(b.driveFileId))-Number(Boolean(a.driveFileId))).map(s=><div className="syllabus-item" key={s.id}><button type="button" aria-pressed={s.id===skill.id} onClick={()=>setSelected(s.id)}><SkillIcon skill={s}/><span><strong>{s.name}</strong><small>{s.questions?.length?`${s.questions.length} preguntas`:'Práctica generada'} · {s.active?'Activo':'En pausa'}</small></span></button></div>)}</div><BankDetail key={skill.id} skill={skill}>{editors[skills.findIndex(s=>s.id===skill.id)]}</BankDetail></div>;
+ if(!skill)return <p>Todavía no hay temarios. Sube un PDF a su carpeta y actívalo desde Banco de Drive.</p>;
+ return <div className="syllabus-library"><div className="syllabus-picker" role="group" aria-label="Elegir temario">{[...skills].sort((a,b)=>Number(Boolean(b.driveFileId))-Number(Boolean(a.driveFileId))).map(s=><button type="button" key={s.id} aria-pressed={s.id===skill.id} onClick={()=>setSelected(s.id)}><SkillIcon skill={s}/><span><strong>{s.name}</strong><small>{s.questions?.length?`${s.questions.length} preguntas`:'Práctica generada'} · {s.active?'Activo':'En pausa'}</small></span></button>)}</div><BankDetail key={skill.id} skill={skill}>{editors[skills.findIndex(s=>s.id===skill.id)]}</BankDetail></div>;
 }
 function BankDetail({skill,children}:{skill:Skill;children:ReactNode}) {
  const [level,setLevel]=useState(0),[format,setFormat]=useState('all'),[search,setSearch]=useState(''),[selected,setSelected]=useState(0),[error,setError]=useState(''),[pending,startTransition]=useTransition();

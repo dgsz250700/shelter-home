@@ -50,9 +50,9 @@ export default async function Tutor({ searchParams }: { searchParams: Promise<{ 
           </p>
         </div>
         <Image className="admin-mascot" src="/art/numa.webp" width={160} height={160} alt="Numa listo para preparar una práctica"/>
-        <a href="#new-skill" className="primary">
+        <a href="#drive" className="primary">
           <Icon name="plus" />
-          Nueva habilidad
+          Nueva microhabilidad
         </a>
       </div>
       <TutorWorkspace students={data.students} current={data.student.id} initial={params.vista}>

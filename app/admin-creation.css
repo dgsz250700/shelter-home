@@ -12,6 +12,4 @@
 .student-tabs{display:flex;gap:6px;margin:12px 0 4px;flex-wrap:wrap}
 .student-tabs a{padding:8px 18px;border-radius:99px;border:1px solid #d6dfe0;font-weight:800;color:#17394a;text-decoration:none;background:#fff}
 .student-tabs a[aria-current=page]{background:#17394a;color:#fff;border-color:#17394a}
-.syllabus-item{display:flex;align-items:center;gap:8px}
-.syllabus-item>button:first-child{flex:1;min-width:0}
 .student-tabs{margin-bottom:28px}
