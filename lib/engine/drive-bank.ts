@@ -11,10 +11,8 @@ export function validateDriveBank(value:unknown){
  // Same wording is fine when the figure or the options differ (e.g. «¿Qué nota aparece?» over different staffs).
  const key=(q:typeof questions[number])=>q.sourceNumber?`#${q.sourceNumber}`:[q.prompt.trim().toLowerCase(),q.image??'',(q.choices??[]).map(c=>c.label.toLowerCase()).join('|')].join('§');
  if(new Set(questions.map(key)).size!==questions.length)throw new Error('Hay preguntas repetidas en el PDF. Revisa el banco.');
- for(const level of [1,2,3,4]){
-  const required=DAILY_LEVELS.filter(l=>l===level).length;
-  if(questions.filter(q=>q.level===level).length<required)throw new Error(`Faltan preguntas del nivel ${level-1}: necesitas al menos ${required}.`);
- }
+ // Any levels are fine (a PDF may stop at level 2); daily practice uses the levels present.
+ if(questions.length<10)throw new Error('El banco necesita al menos 10 preguntas.');
  return questions;
 }
 export function sourceContainsPrompt(source:string,prompt:string){
