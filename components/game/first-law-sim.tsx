@@ -190,7 +190,10 @@ function axes(process: Process) {
   const vSpan = Math.max(Math.max(...vs) - Math.min(...vs), 2), pSpan = Math.max(...ps) - Math.min(...ps);
   return {
     V: { min: Math.min(...vs) - vSpan * 0.25, max: Math.max(...vs) + vSpan * 0.25 },
-    P: { min: Math.max(0, Math.min(...ps) - Math.max(pSpan, 40) * 0.6), max: Math.max(...ps) + Math.max(pSpan, 40) * 0.25 },
+    // At constant volume the path is a vertical line: tight pressure axis so it spans almost the whole height.
+    P: process === "isocorico"
+      ? { min: Math.min(...ps) - pSpan * 0.04, max: Math.max(...ps) + pSpan * 0.04 }
+      : { min: Math.max(0, Math.min(...ps) - Math.max(pSpan, 40) * 0.6), max: Math.max(...ps) + Math.max(pSpan, 40) * 0.25 },
   };
 }
 function PVGraph({ process, x }: { process: Process; x: number }) {
