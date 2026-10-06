@@ -7,6 +7,7 @@ import {geometry} from "./generators/geometry";
 import {measurement} from "./generators/measurement";
 import { units } from "./generators/units";
 import { chemistry } from "./generators/chemistry";
+import { gradeRhythm, parsePlayed, rhythmError, rhythmTolerance } from "./rhythm";
 export function generate(
   family: Family,
   skillId: string,
@@ -68,6 +69,12 @@ export function evaluate(exercise: Exercise, input: string): Evaluation {
     if(!input.trim())return {valid:false,message:"Escribe una respuesta corta."};
     const correct=looseText(input)===looseText(exercise.answer);
     return {valid:true,correct,errorType:correct?null:"RESPUESTA_CONCEPTUAL"};
+  }
+  if(exercise.answerFormat === "rhythm"){
+    const played=parsePlayed(input);
+    if(!played||!exercise.rhythm)return {valid:false,message:"Toca el compás primero."};
+    const grade=gradeRhythm(exercise.rhythm.notes.map(([at])=>at),played,rhythmTolerance(exercise.level,exercise.rhythm.notes));
+    return {valid:true,correct:grade.passed,errorType:grade.passed?null:rhythmError(grade)};
   }
   if(exercise.answerFormat === "match"){
     const values=input.split(","); const count=exercise.matches?.length??0;

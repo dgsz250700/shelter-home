@@ -7,7 +7,7 @@ export type Exercise = {
   prompt: string;
   displayPrompt?: string;
   answer: string;
-  answerFormat: "number" | "fraction" | "coefficients" | "expression" | "choice" | "text" | "boolean" | "match";
+  answerFormat: "number" | "fraction" | "coefficients" | "expression" | "choice" | "text" | "boolean" | "match" | "rhythm";
   matches?: {left:string;right:string}[];
   choices?: {value:string;label:string}[];
   unitScale?: {units:string[];source:string;target:string;stepFactor:number};
@@ -19,6 +19,7 @@ export type Exercise = {
   tolerance?: number;
   image?: string;
   imageAlt?: string;
+  rhythm?: import("./rhythm").RhythmSpec;
   errorSignatures: { value: string; errorType: string }[];
   hints: [string, string, string];
 };
@@ -28,6 +29,7 @@ export type CustomQuestion = {
   choices?: {value:string;label:string}[];
   image?: string;
   imageAlt?: string;
+  rhythm?: import("./rhythm").RhythmSpec;
   prompt: string;
   answer: string;
   hints: [string, string, string];

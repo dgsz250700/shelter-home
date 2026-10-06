@@ -1,6 +1,7 @@
 "use client";
 import {MathText,QuestionContent} from "./question-content";
 import {MatchAnswer} from "./match-answer";
+import {RhythmAnswer} from "./rhythm-answer";
 import {Calculator} from "./calculator";
 import {ExerciseDiagram} from "./exercise-visual";
 import {track} from "@/components/telemetry/client";
@@ -52,6 +53,8 @@ export function Practice({
   const chancesFor=(step:number)=>step>=8?2:1;
   const [misses, setMisses] = useState(currentAttempts.filter(a=>!a.correct).length);
   const [review, setReview] = useState(!currentAttempts.some(a=>a.correct)&&currentAttempts.filter(a=>!a.correct).length>=chancesFor(Math.min(9,resumed.completedSeeds.length)));
+  // The last answer that was checked: a played rhythm shows its note-by-note result only after checking.
+  const [checked, setChecked] = useState(currentAttempts.at(-1)?.given_answer ?? "");
   const [flash, setFlash] = useState<{kind:"good"|"bad";seed:string}|null>(null);
   const [result, setResult] = useState<Completion | null>(null);
   const [skillResults, setSkillResults] = useState<
@@ -159,6 +162,7 @@ export function Practice({
         session_id: sessionId,
       });
       pendingAttempt.current=null;
+      setChecked(answer);
       onReward(saved.state);
       activeTime.reset();
       setSkillResults((previous) => ({
@@ -213,7 +217,7 @@ export function Practice({
         const completion=await completeMission(sessionId,correct,sessionTime.read()+resumed.attempts.reduce((sum,a)=>sum+a.response_ms,0));
         setResult(completion);onReward(completion.state);onStep(10);
       } else {
-        setIndex(n=>n+1);onStep(index+1);setAnswer("");cursor.current=null;setHint(0);setMessage("");setSolved(false);setWrong(false);setMisses(0);setReview(false);
+        setIndex(n=>n+1);onStep(index+1);setAnswer("");cursor.current=null;setHint(0);setMessage("");setSolved(false);setWrong(false);setMisses(0);setReview(false);setChecked("");
       }
     } catch {setMessage("Tu avance sigue aquí. Toca el botón de nuevo para guardarlo.");}
     finally {gate.current=false;setBusy(false);}
@@ -321,10 +325,10 @@ export function Practice({
       </p>
       </>}
       <ExerciseDiagram key={`visual:${exercise.seed}`} exercise={exercise}/>
-      {exercise.image && (
+      {exercise.image && exercise.answerFormat!=="rhythm" && (
         <ImageViewer src={exercise.image} alt={exercise.imageAlt} />
       )}
-      {exercise.answerFormat==="match"?<MatchAnswer exercise={exercise} value={answer} onChange={setAnswer} disabled={busy||solved||review}/>:presentationChoices ? <fieldset className="answer-choices" disabled={busy||solved||review}><legend className="sr-only">Elige la respuesta correcta</legend>{presentationChoices.map((choice,i)=><label key={choice.value} className={answer===choice.value?'choice-selected':''}><input type="radio" name={`choice-${exercise.seed}`} value={choice.value} checked={answer===choice.value} onChange={()=>{setAnswer(choice.value);track('control_used',{control:'answer_choice',format:'choice',step:index},{sessionId,skillId:skill.id});}}/><span className="choice-letter">{String.fromCharCode(65+i)}</span><span className="choice-value"><MathText text={choice.label}/></span><Icon name="check" size={18}/></label>)}</fieldset> : <>
+      {exercise.answerFormat==="rhythm"?<RhythmAnswer key={exercise.seed} exercise={exercise} value={answer} onChange={setAnswer} disabled={busy||solved||review} revealed={answer!==""&&answer===checked}/>:exercise.answerFormat==="match"?<MatchAnswer exercise={exercise} value={answer} onChange={setAnswer} disabled={busy||solved||review}/>:presentationChoices ? <fieldset className="answer-choices" disabled={busy||solved||review}><legend className="sr-only">Elige la respuesta correcta</legend>{presentationChoices.map((choice,i)=><label key={choice.value} className={answer===choice.value?'choice-selected':''}><input type="radio" name={`choice-${exercise.seed}`} value={choice.value} checked={answer===choice.value} onChange={()=>{setAnswer(choice.value);track('control_used',{control:'answer_choice',format:'choice',step:index},{sessionId,skillId:skill.id});}}/><span className="choice-letter">{String.fromCharCode(65+i)}</span><span className="choice-value"><MathText text={choice.label}/></span><Icon name="check" size={18}/></label>)}</fieldset> : <>
       <label className="answer-label" htmlFor="answer">
         {exercise.answerFormat === "coefficients"
           ? "Coeficientes, separados por comas"
@@ -404,7 +408,7 @@ export function Practice({
         </div>
       )}
       </>}
-      <Calculator key={`calculator:${exercise.seed}`} sessionId={sessionId} skillId={skill.id}/>
+      {exercise.answerFormat!=="rhythm"&&<Calculator key={`calculator:${exercise.seed}`} sessionId={sessionId} skillId={skill.id}/>}
       {message && (
         <div className={`feedback ${solved ? "good" : ""}`} role="status">
           <Icon name={solved ? "check" : "bulb"} size={23} />
@@ -413,7 +417,7 @@ export function Practice({
       )}
       {review && (
         <div className="worked-answer">
-          <strong>Lo vemos juntos: <MathText text={exercise.choices?.find(c=>c.value===exercise.answer)?.label??exercise.answer}/></strong>
+          {exercise.answerFormat==="rhythm"?<strong>Lo vemos juntos: escucha cómo suena el compás y cuenta los pulsos.</strong>:<strong>Lo vemos juntos: <MathText text={exercise.choices?.find(c=>c.value===exercise.answer)?.label??exercise.answer}/></strong>}
           <p><MathText text={exercise.hints[2]}/></p>
         </div>
       )}

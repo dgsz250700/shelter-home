@@ -6,7 +6,7 @@ import {SkillIcon} from '@/components/game/skill-icon';
 import {QuestionPreview} from './question-preview';
 import {MathText} from '@/components/game/question-content';
 import {setBankActive} from '@/lib/data/tutor-actions';
-const formats:Record<string,string>={number:'Respuesta numérica',choice:'Opción múltiple',boolean:'Verdadero o falso',expression:'Despeje',fraction:'Fracción',text:'Respuesta escrita',match:'Relacionar',coefficients:'Coeficientes'};
+const formats:Record<string,string>={number:'Respuesta numérica',choice:'Opción múltiple',boolean:'Verdadero o falso',expression:'Despeje',fraction:'Fracción',text:'Respuesta escrita',match:'Relacionar',coefficients:'Coeficientes',rhythm:'Tocar el ritmo'};
 export function CatalogBrowser({skills,children}:{skills:Skill[];children:ReactNode}) {
  const [selected,setSelected]=useState(skills.find(s=>s.driveFileId)?.id??skills[0]?.id??'');
  const skill=skills.find(s=>s.id===selected)??skills[0];
