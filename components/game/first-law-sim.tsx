@@ -14,15 +14,15 @@ type State = { Q: number; W: number; dU: number; T: number; V: number; P: number
 
 const PROCESSES: Record<Process, { title: string; rule: string; slider: string; min: number; max: number; step: number; start: number; unit: string; question: Question }> = {
   isocorico: {
-    title: "Volumen fijo", rule: "El pistón está trabado: W = 0, todo el calor cambia la energía interna", slider: "Calor que le das (o le quitas) al gas", min: -400, max: 400, step: 20, start: 200, unit: "J",
+    title: "V const", rule: "El pistón está trabado: W = 0, todo el calor cambia la energía interna", slider: "Calor que le das (o le quitas) al gas", min: -400, max: 400, step: 20, start: 200, unit: "J",
     question: { text: "Calientas el gas con el pistón trabado. ¿Cuánto trabajo hace el gas?", options: ["Ninguno", "El mismo que el calor", "La mitad del calor"], answer: 0, why: "Sin moverse el pistón no hay trabajo (W = 0): todo el calor se queda como energía interna y la temperatura sube." },
   },
   isobarico: {
-    title: "Presión fija", rule: "El pistón se mueve libre: parte del calor calienta el gas y parte empuja el pistón", slider: "Calor que le das (o le quitas) al gas", min: -400, max: 400, step: 20, start: 300, unit: "J",
+    title: "P const", rule: "El pistón se mueve libre: parte del calor calienta el gas y parte empuja el pistón", slider: "Calor que le das (o le quitas) al gas", min: -400, max: 400, step: 20, start: 300, unit: "J",
     question: { text: "Le das calor al gas a presión constante. ¿Todo ese calor lo calienta?", options: ["No, una parte empuja el pistón", "Sí, todo lo calienta", "Lo calienta aún más de lo que le diste"], answer: 0, why: "Parte del calor se gasta en empujar el pistón (trabajo) y solo el resto sube la energía interna. Mira las barras: la de ΔU es más corta que la de Q." },
   },
   isotermico: {
-    title: "Temperatura fija", rule: "La temperatura no cambia: ΔU = 0, así que el calor que entra sale como trabajo (Q = W)", slider: "Trabajo que hace el gas (expandirse +, comprimirlo −)", min: -400, max: 400, step: 20, start: 200, unit: "J",
+    title: "T const", rule: "La temperatura no cambia: ΔU = 0, así que el calor que entra sale como trabajo (Q = W)", slider: "Trabajo que hace el gas (expandirse +, comprimirlo −)", min: -400, max: 400, step: 20, start: 200, unit: "J",
     question: { text: "El gas se expande sin cambiar su temperatura. ¿De dónde sale la energía para empujar el pistón?", options: ["Del calor que recibe", "De su energía interna", "De ninguna parte"], answer: 0, why: "Si T no cambia, la energía interna tampoco (ΔU = 0). Entonces Q = W: todo el calor que entra se convierte en trabajo." },
   },
   adiabatico: {
@@ -47,7 +47,14 @@ function story({ Q, W, dU }: State) {
   const inside = Math.round(dU) > 0 ? "el gas se calienta" : Math.round(dU) < 0 ? "el gas se enfría" : "la temperatura no cambia";
   return `${heat}, ${work} y ${inside}.`;
 }
-const heat = (T: number) => `hsl(${Math.round(220 - ((Math.min(450, Math.max(200, T)) - 200) / 250) * 220)} 80% 52%)`;
+// Colour by temperature: neutral at 300 K, slowly redder when hotter and bluer when colder.
+const NEUTRAL = [91, 107, 128], HOT = [214, 52, 34], COLD = [59, 111, 214];
+function tint(T: number, alpha = 1, base = NEUTRAL) {
+  const t = Math.max(-1, Math.min(1, (T - T0) / 70));
+  const to = t > 0 ? HOT : COLD, k = Math.abs(t);
+  const [r, g, b] = base.map((c, i) => Math.round(c + (to[i] - c) * k));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
 export function FirstLawSim() {
   const [process, setProcess] = useState<Process>("isocorico");
@@ -65,13 +72,15 @@ export function FirstLawSim() {
     setX(PROCESSES[next].start);
   }
 
-  // Gas particles in a cylinder: faster and redder when hotter; the piston follows the volume.
+  // Gas particles in a cylinder: faster and redder when hotter (bluer when colder); the piston follows the volume.
   useEffect(() => {
     const el = canvas.current;
     const ctx = el?.getContext("2d");
     if (!el || !ctx) return;
     const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const parts = Array.from({ length: 40 }, () => ({ x: Math.random(), y: Math.random(), a: Math.random() * Math.PI * 2 }));
+    // What is drawn eases toward the new state, so the gas and the cylinder warm up (or cool) gradually.
+    const shown = { T: T0, V: V0 };
     let frame = 0, last = performance.now();
     const draw = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -82,11 +91,15 @@ export function FirstLawSim() {
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, w, h);
       const { s: st, process: pr } = live.current;
-      const pad = 16, boxH = h - 2 * pad - 26, boxW = ((w - 2 * pad - 30) * st.V) / MAX_V;
-      ctx.fillStyle = "rgba(35,127,121,0.06)";
+      const ease = Math.min(1, dt * (calm ? 6 : 1.8));
+      shown.T += (st.T - shown.T) * ease;
+      shown.V += (st.V - shown.V) * ease;
+      const pad = 16, boxH = h - 2 * pad - 26, boxW = ((w - 2 * pad - 30) * shown.V) / MAX_V;
+      const warmth = Math.min(1, Math.abs(shown.T - T0) / 70);
+      ctx.fillStyle = tint(shown.T, 0.05 + 0.22 * warmth);
       ctx.fillRect(pad, pad, boxW, boxH);
-      // Insulated walls are thick and striped; the others are a plain line.
-      ctx.strokeStyle = pr === "adiabatico" ? "#c98a12" : "#34364f";
+      // The cylinder takes the gas's colour; insulated walls are thicker.
+      ctx.strokeStyle = tint(shown.T, 1, [52, 54, 79]);
       ctx.lineWidth = pr === "adiabatico" ? 7 : 3;
       ctx.beginPath();
       ctx.moveTo(pad + boxW, pad); ctx.lineTo(pad, pad); ctx.lineTo(pad, pad + boxH); ctx.lineTo(pad + boxW, pad + boxH);
@@ -103,8 +116,8 @@ export function FirstLawSim() {
         const count = Math.min(5, 1 + Math.floor(Math.abs(st.Q) / 100));
         for (let i = 0; i < count; i++) ctx.fillText(icon, pad + (boxW * (i + 0.5)) / count, pad + boxH + 24);
       }
-      const speed = (calm ? 0.25 : 0.55) * Math.sqrt(st.T / 300);
-      ctx.fillStyle = heat(st.T);
+      const speed = (calm ? 0.25 : 0.55) * Math.sqrt(shown.T / 300);
+      ctx.fillStyle = tint(shown.T);
       for (const p of parts) {
         p.x += ((Math.cos(p.a) * speed * dt) / boxW) * 160;
         p.y += ((Math.sin(p.a) * speed * dt) / boxH) * 160;
