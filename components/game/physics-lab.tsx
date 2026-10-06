@@ -16,7 +16,7 @@ export function PhysicsLab() {
   return (
     <section className="physics-lab">
       <h2>Laboratorio</h2>
-      <p className="lab-intro">Mueve los controles y mira qué pasa. Aquí puedes explorar libremente: no cuenta como práctica ni cambia tu racha.</p>
+      <p className="lab-intro">Explora</p>
       <div className="lab-shelf" role="tablist" aria-label="Simuladores">
         {SIMULATORS.map((s) => (
           <button key={s.id} type="button" role="tab" aria-selected={s.id === current.id} onClick={() => setSelected(s.id)}>
