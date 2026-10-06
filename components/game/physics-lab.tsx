@@ -13,24 +13,27 @@ const SIMULATORS: { id: string; emoji: string; title: string; topic: string; blu
 ];
 
 export function PhysicsLab() {
-  const [selected, setSelected] = useState(SIMULATORS[0].id);
-  const current = SIMULATORS.find((s) => s.id === selected) ?? SIMULATORS[0];
+  // Tapping the open card again closes its simulator.
+  const [selected, setSelected] = useState<string | null>(SIMULATORS[0].id);
+  const current = SIMULATORS.find((s) => s.id === selected);
   return (
     <section className="physics-lab">
       <h2>Laboratorio</h2>
       <p className="lab-intro">Explora</p>
-      <div className="lab-shelf" role="tablist" aria-label="Simuladores">
+      <div className="lab-shelf" aria-label="Simuladores">
         {SIMULATORS.map((s) => (
-          <button key={s.id} type="button" role="tab" aria-selected={s.id === current.id} onClick={() => setSelected(s.id)}>
+          <button key={s.id} type="button" aria-expanded={s.id === selected} aria-controls="lab-stage" onClick={() => setSelected(s.id === selected ? null : s.id)}>
             <span className="lab-emoji" aria-hidden="true">{s.emoji}</span>
             <span><strong>{s.title}</strong><small>{s.topic} · {s.blurb}</small></span>
           </button>
         ))}
       </div>
-      <div className="lab-stage" role="tabpanel" aria-label={current.title}>
-        <current.Sim key={current.id} />
-        <p className="lab-note">{current.topic} · {current.note}</p>
-      </div>
+      {current && (
+        <div className="lab-stage" id="lab-stage" aria-label={current.title}>
+          <current.Sim key={current.id} />
+          <p className="lab-note">{current.topic} · {current.note}</p>
+        </div>
+      )}
     </section>
   );
 }
