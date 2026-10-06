@@ -2,12 +2,14 @@
 import { useState, type ComponentType } from "react";
 import { ThermoSim } from "./thermo-sim";
 import { ArchimedesSim } from "./archimedes-sim";
+import { FluidsSim } from "./fluids-sim";
 
 // The lab tab: a shelf of simulators to explore. A new simulator is one more entry here.
 // Nothing is saved: it does not count as practice or change the streak.
 const SIMULATORS: { id: string; emoji: string; title: string; topic: string; blurb: string; note: string; Sim: ComponentType }[] = [
   { id: "gases", emoji: "🌡️", title: "Gases", topic: "Termodinámica", blurb: "Presión, volumen y temperatura", note: "Gas ideal: PV = nRT, con 0,1 mol.", Sim: ThermoSim },
   { id: "flotacion", emoji: "🧊", title: "Flotación", topic: "Hidrostática", blurb: "El principio de Arquímedes", note: "Empuje = peso del líquido desalojado (g = 9,8 m/s²).", Sim: ArchimedesSim },
+  { id: "hidrodinamica", emoji: "🚰", title: "Hidrodinámica", topic: "Fluidos en movimiento", blurb: "Torricelli, continuidad y Bernoulli", note: "Agua (1000 kg/m³), g = 9,8 m/s², sin rozamiento.", Sim: FluidsSim },
 ];
 
 export function PhysicsLab() {
