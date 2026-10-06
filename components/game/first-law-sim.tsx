@@ -7,7 +7,8 @@ import { Predict, type Question } from "./predict";
 const N = 0.5, R = 8.314, T0 = 300, V0 = 10;
 const CV = 1.5 * R, CP = 2.5 * R;
 const P0 = (N * R * T0) / V0; // kPa (J/L)
-const MAX_V = 16;
+// The piston's travel is exaggerated so small volume changes are easy to see (most of all at constant pressure).
+const PISTON_GAIN: Record<string, number> = { isocorico: 1, isobarico: 3.2, isotermico: 1.6, adiabatico: 1.6 };
 
 type Process = "isocorico" | "isobarico" | "isotermico" | "adiabatico";
 type State = { Q: number; W: number; dU: number; T: number; V: number; P: number };
@@ -94,7 +95,9 @@ export function FirstLawSim() {
       const ease = Math.min(1, dt * (calm ? 6 : 1.8));
       shown.T += (st.T - shown.T) * ease;
       shown.V += (st.V - shown.V) * ease;
-      const pad = 16, boxH = h - 2 * pad - 26, boxW = ((w - 2 * pad - 30) * shown.V) / MAX_V;
+      const reach = (w - 2 * 16 - 30) / 1.7; // room for the cylinder at its starting volume
+      const stretch = Math.max(0.4, Math.min(1.7, 1 + PISTON_GAIN[pr] * (shown.V / V0 - 1)));
+      const pad = 16, boxH = h - 2 * pad - 26, boxW = reach * stretch;
       const warmth = Math.min(1, Math.abs(shown.T - T0) / 70);
       ctx.fillStyle = tint(shown.T, 0.05 + 0.22 * warmth);
       ctx.fillRect(pad, pad, boxW, boxH);
@@ -156,6 +159,7 @@ export function FirstLawSim() {
         <span>ΔU = Q − W</span>
         <strong>{story(s)}</strong>
       </div>
+      <PVGraph process={process} x={x} />
       <svg className="first-law-bars" viewBox="0 0 320 96" role="img" aria-label="Barras de energía">
         <line x1="200" x2="200" y1="4" y2="92" />
         {bars.map((b, i) => {
@@ -174,5 +178,47 @@ export function FirstLawSim() {
       </label>
       <Predict key={process} q={info.question} />
     </div>
+  );
+}
+
+// P–V diagram: the path from the starting state to the current one. The shaded area under it is the work.
+// Each process gets axes that fit everything its slider can reach, so its path fills the graph.
+function axes(process: Process) {
+  const { min, max } = PROCESSES[process];
+  const states = Array.from({ length: 21 }, (_, i) => compute(process, min + ((max - min) * i) / 20));
+  const vs = states.map((s) => s.V), ps = states.map((s) => s.P);
+  const vSpan = Math.max(Math.max(...vs) - Math.min(...vs), 2), pSpan = Math.max(...ps) - Math.min(...ps);
+  return {
+    V: { min: Math.min(...vs) - vSpan * 0.25, max: Math.max(...vs) + vSpan * 0.25 },
+    P: { min: Math.max(0, Math.min(...ps) - Math.max(pSpan, 40) * 0.6), max: Math.max(...ps) + Math.max(pSpan, 40) * 0.25 },
+  };
+}
+function PVGraph({ process, x }: { process: Process; x: number }) {
+  const { V: GV, P: GP } = axes(process);
+  const start = process === "adiabatico" ? V0 : 0;
+  const path = Array.from({ length: 41 }, (_, i) => compute(process, start + ((x - start) * i) / 40));
+  const px = (V: number) => 30 + ((V - GV.min) / (GV.max - GV.min)) * 270;
+  const py = (P: number) => 112 - ((P - GP.min) / (GP.max - GP.min)) * 100;
+  const line = path.map((p, i) => `${i ? "L" : "M"}${px(p.V).toFixed(1)} ${py(p.P).toFixed(1)}`).join(" ");
+  const first = path[0], end = path[path.length - 1];
+  const area = `${line} L${px(end.V).toFixed(1)} 112 L${px(first.V).toFixed(1)} 112 Z`;
+  const expands = end.V > first.V + 0.01, squeezes = end.V < first.V - 0.01;
+  return (
+    <figure className="pv-graph">
+      <svg viewBox="0 0 310 132" role="img" aria-label={`Gráfica presión contra volumen: ${expands ? "el gas se expande" : squeezes ? "el gas se comprime" : "el volumen no cambia"}`}>
+        <line className="pv-axis" x1="30" y1="112" x2="304" y2="112" />
+        <line className="pv-axis" x1="30" y1="6" x2="30" y2="112" />
+        <text x="300" y="126" textAnchor="end">V</text>
+        <text x="20" y="14" textAnchor="middle">P</text>
+        {(expands || squeezes) && <path d={area} className={expands ? "pv-area out" : "pv-area in"} />}
+        <path d={line} className="pv-path" />
+        <circle cx={px(first.V)} cy={py(first.P)} r="4.5" className="pv-start" />
+        <circle cx={px(end.V)} cy={py(end.P)} r="6" className="pv-end" />
+      </svg>
+      <figcaption>
+        <span className="pv-key start" />inicio <span className="pv-key end" />ahora
+        {expands ? " · El área sombreada es el trabajo que hace el gas al expandirse." : squeezes ? " · El área sombreada es el trabajo que se hace sobre el gas al comprimirlo." : " · Sin cambio de volumen no hay área: el trabajo es cero."}
+      </figcaption>
+    </figure>
   );
 }

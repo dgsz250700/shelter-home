@@ -94,3 +94,7 @@
 .first-law-box{height:215px}
 .first-law-equation{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px;background:white;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.first-law-equation span{font-size:13px;color:var(--muted);font-weight:700}.first-law-equation strong{font-size:15px;line-height:1.4}
 .first-law-bars{width:100%;background:white;border:1px solid var(--line);border-radius:12px}.first-law-bars line{stroke:var(--muted);stroke-width:1.2}.first-law-bars text{font-size:10.5px;fill:var(--ink)}.first-law-bars .first-law-value{font-weight:800;font-size:11px}.first-law-bars rect{transition:x .25s,width .25s}
+.pv-graph{margin:0;background:white;border:1px solid var(--line);border-radius:12px;padding:8px 10px}.pv-graph svg{width:100%;display:block}.pv-graph text{font-size:12px;font-weight:800;fill:var(--muted)}
+.pv-axis{stroke:var(--muted);stroke-width:1.4}.pv-path{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round}.pv-area.out{fill:rgba(91,127,214,.28)}.pv-area.in{fill:rgba(232,121,79,.28)}
+.pv-start{fill:white;stroke:var(--ink);stroke-width:2}.pv-end{fill:var(--coral);stroke:white;stroke-width:2}
+.pv-graph figcaption{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}.pv-key{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px -1px 6px;vertical-align:baseline}.pv-key.start{border:2px solid var(--ink);background:white}.pv-key.end{background:var(--coral)}
