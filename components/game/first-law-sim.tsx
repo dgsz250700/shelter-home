@@ -19,14 +19,14 @@ const PROCESSES: Record<Process, { title: string; rule: string; slider: string; 
   },
   isobarico: {
     title: "Presión fija", rule: "El pistón se mueve libre: parte del calor calienta el gas y parte empuja el pistón", slider: "Calor que le das (o le quitas) al gas", min: -400, max: 400, step: 20, start: 300, unit: "J",
-    question: { text: "Le das 300 J de calor a presión constante. ¿La energía interna sube 300 J?", options: ["No, sube menos", "Sí, exactamente 300 J", "Sube más de 300 J"], answer: 0, why: "Parte del calor se gasta en empujar el pistón (trabajo). En este gas, el 40 % se va en trabajo y el 60 % calienta el gas." },
+    question: { text: "Le das calor al gas a presión constante. ¿Todo ese calor lo calienta?", options: ["No, una parte empuja el pistón", "Sí, todo lo calienta", "Lo calienta aún más de lo que le diste"], answer: 0, why: "Parte del calor se gasta en empujar el pistón (trabajo) y solo el resto sube la energía interna. Mira las barras: la de ΔU es más corta que la de Q." },
   },
   isotermico: {
     title: "Temperatura fija", rule: "La temperatura no cambia: ΔU = 0, así que el calor que entra sale como trabajo (Q = W)", slider: "Trabajo que hace el gas (expandirse +, comprimirlo −)", min: -400, max: 400, step: 20, start: 200, unit: "J",
     question: { text: "El gas se expande sin cambiar su temperatura. ¿De dónde sale la energía para empujar el pistón?", options: ["Del calor que recibe", "De su energía interna", "De ninguna parte"], answer: 0, why: "Si T no cambia, la energía interna tampoco (ΔU = 0). Entonces Q = W: todo el calor que entra se convierte en trabajo." },
   },
   adiabatico: {
-    title: "Sin calor", rule: "Paredes aisladas: Q = 0, el trabajo sale (o entra) de la energía interna", slider: "Volumen final del gas", min: 7, max: 14, step: 0.5, start: 8, unit: "L",
+    title: "Sin calor", rule: "Paredes aisladas: Q = 0, el trabajo sale (o entra) de la energía interna", slider: "Comprime o expande el gas", min: 7, max: 14, step: 0.5, start: 8, unit: "L",
     question: { text: "Comprimes el gas muy rápido, sin que entre ni salga calor. ¿Qué le pasa a su temperatura?", options: ["Sube", "Baja", "No cambia"], answer: 0, why: "Al comprimirlo haces trabajo sobre el gas (W negativo) y esa energía se queda adentro: ΔU = −W > 0. Por eso se calienta un inflador de bicicleta." },
   },
 };
@@ -40,8 +40,13 @@ function compute(process: Process, x: number): State {
   return { Q: 0, W: -dU, dU, T, V: x, P: (N * R * T) / x };
 }
 
-const fmt = (n: number, d = 0) => n.toLocaleString("es-CO", { maximumFractionDigits: d, minimumFractionDigits: d });
-const signed = (n: number) => `${Math.round(n) > 0 ? "+" : ""}${fmt(n)}`;
+// What is happening, in words: no numbers, only the direction of each energy.
+function story({ Q, W, dU }: State) {
+  const heat = Math.round(Q) > 0 ? "Entra calor" : Math.round(Q) < 0 ? "Sale calor" : "No entra ni sale calor";
+  const work = Math.round(W) > 0 ? "el gas empuja el pistón" : Math.round(W) < 0 ? "el pistón comprime el gas" : "el pistón no se mueve";
+  const inside = Math.round(dU) > 0 ? "el gas se calienta" : Math.round(dU) < 0 ? "el gas se enfría" : "la temperatura no cambia";
+  return `${heat}, ${work} y ${inside}.`;
+}
 const heat = (T: number) => `hsl(${Math.round(220 - ((Math.min(450, Math.max(200, T)) - 200) / 250) * 220)} 80% 52%)`;
 
 export function FirstLawSim() {
@@ -133,10 +138,10 @@ export function FirstLawSim() {
         ))}
       </div>
       <p className="thermo-fixed">ΔU = Q − W · <span>{info.rule}</span></p>
-      <canvas ref={canvas} className="thermo-box first-law-box" role="img" aria-label={`Calor ${fmt(s.Q)} julios, trabajo ${fmt(s.W)} julios, cambio de energía interna ${fmt(s.dU)} julios`} />
+      <canvas ref={canvas} className="thermo-box first-law-box" role="img" aria-label={story(s)} />
       <div className="first-law-equation" aria-live="polite">
         <span>ΔU = Q − W</span>
-        <strong>{signed(s.dU)} J = {signed(s.Q)} J − ({signed(s.W)} J)</strong>
+        <strong>{story(s)}</strong>
       </div>
       <svg className="first-law-bars" viewBox="0 0 320 96" role="img" aria-label="Barras de energía">
         <line x1="200" x2="200" y1="4" y2="92" />
@@ -147,17 +152,11 @@ export function FirstLawSim() {
             <g key={b.label}>
               <text x="4" y={y + 14}>{b.label}</text>
               <rect x={b.value >= 0 ? 200 : 200 - width} y={y} width={Math.max(1, width)} height="18" rx="4" fill={b.color} />
-              <text x={b.value >= 0 ? 204 + width : 196 - width} y={y + 14} textAnchor={b.value >= 0 ? "start" : "end"} className="first-law-value">{signed(b.value)}</text>
             </g>
           );
         })}
       </svg>
-      <div className="thermo-readings">
-        <div><small>Temperatura</small><strong style={{ color: heat(s.T) }}>{fmt(s.T)} K</strong><small>empezó en 300 K</small></div>
-        <div><small>Volumen</small><strong>{fmt(s.V, 1)} L</strong><small>empezó en 10 L</small></div>
-        <div><small>Presión</small><strong>{fmt(s.P, 1)} kPa</strong><small>empezó en {fmt(P0, 1)}</small></div>
-      </div>
-      <label className="thermo-slider">{info.slider}: {info.unit === "L" ? fmt(x, 1) : signed(x)} {info.unit}
+      <label className="thermo-slider">{info.slider}
         <input type="range" min={info.min} max={info.max} step={info.step} value={x} onChange={(e) => setX(Number(e.target.value))} />
       </label>
       <Predict key={process} q={info.question} />
