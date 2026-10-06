@@ -18,6 +18,7 @@ import {MissionWelcome} from "./mission-welcome";
 import {AlbumCard} from "./album-card";
 import {PropTransparency} from "@/components/scene/refuge-prop";
 import {FreePractice} from "./free-practice";
+import {PhysicsLab} from "./physics-lab";
 import {DAILY_CHANCES, nextCareReward, careRecipient, type PracticeMode, type CareReward} from "@/lib/engine/challenge";
 import type {PracticeSession} from "@/lib/data/student";
 import { startMission, leaveStudent } from "@/lib/data/actions";
@@ -62,7 +63,9 @@ export function RefugeClient({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(0);
-  const [view, setView] = useState<"home" | "skills" | "cats">("home");
+  const [view, setView] = useState<"home" | "skills" | "cats" | "lab">("home");
+  // Students with physics also get the lab tab (simulators to explore).
+  const hasLab = skills.some((s) => s.subject === "fisica");
   const [liveState, setLiveState] = useState(state);
   const [liveCats, setLiveCats] = useState(cats);
   const [liveStreak, setLiveStreak] = useState(streak);
@@ -164,6 +167,7 @@ export function RefugeClient({
                     { id: "home", label: "Mi refugio", icon: "home" },
                     { id: "cats", label: "Mis gatos", icon: "paw" },
                     { id: "skills", label: "Mis habilidades", icon: "book" },
+                    ...(hasLab ? [{ id: "lab", label: "Laboratorio", icon: "flask" } as const] : []),
                   ] as const
                 ).map((item) => (
                   <button
@@ -186,6 +190,7 @@ export function RefugeClient({
                   {alumni.length>0&&<div className="adoption-album"><h3><Icon name="home"/>Ya tienen hogar</h3><p>Tu ayuda sigue siendo parte de su historia.</p><div className="album">{alumni.map(cat=><AlbumCard key={cat.id} cat={cat}/>)}</div></div>}
                 </section>
               )}
+              {view === "lab" && hasLab && <PhysicsLab />}
               {view === "skills" && (
                 <section className="skill-map">
                   <h2>Mis habilidades</h2>

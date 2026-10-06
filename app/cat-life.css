@@ -71,10 +71,10 @@
 .cat-energy-card progress::-webkit-progress-bar{background:#e0e6e5}
 .cat-energy-card progress::-webkit-progress-value{background:#d64724;border-radius:8px}
 .cat-energy-card .icon-button{right:2px;top:2px}
-/* Physics lab inside "Practicar a mi ritmo" */
-.lab-entry{margin-top:18px;padding-top:18px;border-top:1px dashed var(--line)}.lab-entry p{margin:0 0 12px!important}.lab-entry p strong{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
-.lab-dialog{width:min(720px,calc(100vw - 16px));max-height:calc(100dvh - 16px);border:0;border-radius:18px;padding:18px;background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgb(0 0 0 / .25)}.lab-dialog::backdrop{background:rgb(30 30 50 / .45)}
-.lab-dialog header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.lab-dialog h2{margin:0;font-size:22px}.lab-note{font-size:12px;color:var(--muted);margin:14px 0 0}
+/* Lab tab: a shelf of simulators */
+.physics-lab{max-width:720px;margin:24px auto;padding:0 16px}.physics-lab h2{font-size:24px;margin:0 0 6px}.lab-intro{color:var(--muted);font-size:14px;margin:0 0 16px;line-height:1.5}
+.lab-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px}.lab-shelf button{display:flex;align-items:center;gap:12px;text-align:left;font:inherit;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:white;color:var(--ink);cursor:pointer}.lab-shelf button[aria-selected=true]{border-color:var(--teal);background:#e6f4f1}.lab-shelf strong{display:block;font-size:16px}.lab-shelf small{display:block;font-size:12px;color:var(--muted);margin-top:2px}.lab-emoji{font-size:28px;line-height:1}
+.lab-stage{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px}.lab-note{font-size:12px;color:var(--muted);margin:14px 0 0}
 .thermo-sim{display:grid;gap:12px}
 .thermo-laws{display:flex;gap:6px;flex-wrap:wrap}.thermo-laws button{flex:1;min-height:42px;font:inherit;font-weight:700;font-size:14px;border:2px solid var(--line);background:white;color:var(--ink);border-radius:12px;cursor:pointer}.thermo-laws button[aria-selected=true]{background:var(--teal);border-color:var(--teal);color:white}
 .thermo-fixed{margin:0;font-size:14px;font-weight:700}.thermo-fixed span{font-weight:400;color:var(--muted)}
@@ -84,8 +84,7 @@
 .thermo-slider{display:grid;gap:6px;font-weight:700;font-size:14px}.thermo-slider input{width:100%;accent-color:var(--teal);min-height:32px}
 .thermo-graph{width:100%;max-height:180px;background:white;border-radius:12px;border:1px solid var(--line)}.thermo-graph line{stroke:var(--muted);stroke-width:1.2}.thermo-graph path{fill:none;stroke:var(--teal);stroke-width:2.5}.thermo-graph circle{fill:var(--coral);stroke:white;stroke-width:2}.thermo-graph text{font-size:10px;fill:var(--muted)}
 .thermo-question{background:#fff6dd;border-radius:12px;padding:12px}.thermo-question strong{font-size:15px}.thermo-question div{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.thermo-question button{font:inherit;font-size:14px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:white;color:var(--ink);cursor:pointer}.thermo-question button.is-right{border-color:#2f9e5b;background:#e3f5ea}.thermo-question button.is-wrong{border-color:var(--coral);background:#fde8e5}.thermo-question button:disabled{cursor:default}.thermo-question p{margin:8px 0 0;font-size:14px;line-height:1.5}
-@media(max-width:520px){.thermo-readings strong{font-size:17px}.lab-dialog{padding:14px}}
-.lab-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--line);padding:4px;border-radius:14px;margin-bottom:12px}.lab-switch button{font:inherit;font-weight:800;min-height:40px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer}.lab-switch button[aria-selected=true]{background:white;box-shadow:0 1px 4px rgb(0 0 0 / .12)}
+@media(max-width:520px){.thermo-readings strong{font-size:17px}.lab-stage{padding:12px}.physics-lab{padding:0 8px}}
 .archimedes-scene{width:100%;max-height:260px;background:white;border-radius:14px;border:1px solid var(--line)}.archimedes-liquid{transition:y .5s ease,height .5s ease,fill .3s}.archimedes-block{transition:transform .6s cubic-bezier(.3,1.4,.5,1)}.archimedes-tag{font-size:11px;font-weight:700}.archimedes-result{font-size:13px;font-weight:800;fill:var(--ink)}
 .archimedes-sim .thermo-readings strong{font-size:17px}.archimedes-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.archimedes-controls label{display:grid;gap:4px;font-weight:700;font-size:14px}.archimedes-controls select{font:inherit;font-size:14px;min-height:42px;padding:6px;border-radius:9px;border:1px solid #abbec5;background:white;color:var(--ink)}
 @media(max-width:520px){.archimedes-controls{grid-template-columns:1fr}}

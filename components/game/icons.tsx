@@ -21,12 +21,14 @@ export function Icon({
     | "bowl"
     | "erase"
     | "plus"
-    | "home";
+    | "home"
+    | "flask";
   size?: number;
   className?: string;
   style?: CSSProperties;
 }) {
   const paths = {
+    flask: <><path d="M9 2h6M10 2v6L4.5 18.5A2.3 2.3 0 0 0 6.6 22h10.8a2.3 2.3 0 0 0 2.1-3.5L14 8V2"/><path d="M7 15h10"/></>,
     calculator: <><rect x="4" y="2" width="16" height="20" rx="3"/><path d="M8 6h8M8 11h1m6 0h1m-8 4h1m6 0h1m-8 4h1m6 0h1"/></>,
     paw: (
       <>
