@@ -91,3 +91,6 @@
 .fluid-jet{stroke-dasharray:6 5;animation:fluid-flow .5s linear infinite}.fluid-water{transition:y .3s,height .3s}.fluid-pipe{height:210px}
 @keyframes fluid-flow{to{stroke-dashoffset:-11}}
 @media(prefers-reduced-motion:reduce){.fluid-jet{animation:none}}
+.first-law-box{height:215px}
+.first-law-equation{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px;background:white;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.first-law-equation span{font-size:13px;color:var(--muted);font-weight:700}.first-law-equation strong{font-size:18px;font-variant-numeric:tabular-nums}
+.first-law-bars{width:100%;background:white;border:1px solid var(--line);border-radius:12px}.first-law-bars line{stroke:var(--muted);stroke-width:1.2}.first-law-bars text{font-size:10.5px;fill:var(--ink)}.first-law-bars .first-law-value{font-weight:800;font-size:11px}.first-law-bars rect{transition:x .25s,width .25s}

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Predict } from "./predict";
 
 // Archimedes' principle: a block in a liquid feels an upward push equal to the weight of the liquid it moves aside.
 // It floats when it is less dense than the liquid (and sinks just enough to move its own weight of liquid).
@@ -29,7 +30,6 @@ export function ArchimedesSim() {
   const [material, setMaterial] = useState<(typeof MATERIALS)[number]["id"]>("madera");
   const [liquid, setLiquid] = useState<(typeof LIQUIDS)[number]["id"]>("agua");
   const [volume, setVolume] = useState(500); // cm³
-  const [picked, setPicked] = useState<number | null>(null);
   const m = MATERIALS.find((x) => x.id === material)!;
   const l = LIQUIDS.find((x) => x.id === liquid)!;
 
@@ -80,15 +80,7 @@ export function ArchimedesSim() {
       <label className="thermo-slider">Tamaño del objeto: {volume} cm³
         <input type="range" min={100} max={1000} step={50} value={volume} onChange={(e) => setVolume(Number(e.target.value))} />
       </label>
-      <div className="thermo-question">
-        <strong>Predice: {QUESTION.text}</strong>
-        <div>
-          {QUESTION.options.map((option, i) => (
-            <button key={option} type="button" aria-pressed={picked === i} className={picked === null ? "" : i === QUESTION.answer ? "is-right" : picked === i ? "is-wrong" : ""} onClick={() => setPicked(i)} disabled={picked !== null}>{option}</button>
-          ))}
-        </div>
-        {picked !== null && <p>{picked === QUESTION.answer ? "¡Exacto! " : "Casi. "}{QUESTION.why} Pruébalo: elige Hielo y Agua. Y una sorpresa: ¿qué pasa con el hierro en mercurio?</p>}
-      </div>
+      <Predict q={{ ...QUESTION, why: `${QUESTION.why} Pruébalo: elige Hielo y Agua. Y una sorpresa: ¿qué pasa con el hierro en mercurio?` }} />
     </div>
   );
 }

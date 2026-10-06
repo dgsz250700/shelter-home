@@ -1,26 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Predict } from "./predict";
 
 // Fluids in motion: Torricelli (a tank that empties through a hole) and continuity + Bernoulli (a pipe that narrows).
 const G = 9.8;
 const RHO = 1000; // water, kg/m³
 const fmt = (n: number, d = 1) => n.toLocaleString("es-CO", { maximumFractionDigits: d, minimumFractionDigits: d });
-
-type Question = { text: string; options: string[]; answer: number; why: string };
-function Predict({ q }: { q: Question }) {
-  const [picked, setPicked] = useState<number | null>(null);
-  return (
-    <div className="thermo-question">
-      <strong>Predice: {q.text}</strong>
-      <div>
-        {q.options.map((option, i) => (
-          <button key={option} type="button" aria-pressed={picked === i} className={picked === null ? "" : i === q.answer ? "is-right" : picked === i ? "is-wrong" : ""} onClick={() => setPicked(i)} disabled={picked !== null}>{option}</button>
-        ))}
-      </div>
-      {picked !== null && <p>{picked === q.answer ? "¡Exacto! " : "Casi. "}{q.why}</p>}
-    </div>
-  );
-}
 
 // Torricelli: water leaves the hole as fast as if it had fallen from the surface, v = √(2gh).
 function TorricelliSim() {

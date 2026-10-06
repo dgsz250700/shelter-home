@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Predict } from "./predict";
 
 // A small ideal-gas lab: particles in a box with a piston. One quantity stays fixed, one is moved
 // with the slider, and the third follows PV = nRT. Nothing is saved: it is only for exploring.
@@ -56,7 +57,6 @@ const heat = (T: number) => `hsl(${Math.round(220 - ((Math.min(600, Math.max(150
 export function ThermoSim() {
   const [law, setLaw] = useState<Law>("boyle");
   const [value, setValue] = useState(RANGE.boyle.start);
-  const [picked, setPicked] = useState<number | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const live = useRef(state("boyle", RANGE.boyle.start));
   const { T, V, P } = state(law, value);
@@ -67,7 +67,6 @@ export function ThermoSim() {
   function choose(next: Law) {
     setLaw(next);
     setValue(RANGE[next].start);
-    setPicked(null);
   }
 
   // Particles bounce inside the box; the piston (right wall) follows the volume.
@@ -172,15 +171,7 @@ export function ThermoSim() {
         <text x="162" y="140" textAnchor="middle">{graph.xLabel}</text>
         <text x="10" y="70" textAnchor="middle" transform="rotate(-90 10 70)">{graph.yLabel}</text>
       </svg>
-      <div className="thermo-question">
-        <strong>Predice: {info.question}</strong>
-        <div>
-          {info.options.map((option, i) => (
-            <button key={option} type="button" aria-pressed={picked === i} className={picked === null ? "" : i === info.answer ? "is-right" : picked === i ? "is-wrong" : ""} onClick={() => setPicked(i)} disabled={picked !== null}>{option}</button>
-          ))}
-        </div>
-        {picked !== null && <p>{picked === info.answer ? "¡Exacto! " : "Casi. "}{info.why} Compruébalo con el control de arriba.</p>}
-      </div>
+      <Predict key={law} q={{ text: info.question, options: info.options, answer: info.answer, why: `${info.why} Compruébalo con el control de arriba.` }} />
     </div>
   );
 }
