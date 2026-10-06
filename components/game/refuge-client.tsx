@@ -114,11 +114,11 @@ export function RefugeClient({
     <main className={`game-shell ${session ? "is-playing" : ""}`}>
       <PropTransparency/>
       <header className="game-header" inert={Boolean(session)}>
-        <Link href="/" className="brand" aria-label="Refugio, inicio">
+        <Link href="/" className="brand" aria-label="Michilingo, inicio">
           <span className="brand-mark">
             <Icon name="paw" size={25} />
           </span>
-          <span className="refuge-brand-name">Refugio <small>de {studentName}</small></span>
+          <span className="refuge-brand-name">Michilingo <small>Refugio de {studentName}</small></span>
         </Link>
         <div className="header-actions">
           <span

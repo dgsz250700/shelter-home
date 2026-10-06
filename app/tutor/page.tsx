@@ -30,7 +30,7 @@ export default async function Tutor({ searchParams }: { searchParams: Promise<{ 
           <span className="brand-mark">
             <Icon name="paw" />
           </span>
-          refugio.
+          michilingo.
         </Link>
         <nav>
           <Link className="secondary" href="/">
