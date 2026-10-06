@@ -7,11 +7,12 @@
 // `react` plays once when Laura taps the cat (for example, a hiss).
 // `scale` is the size of the cat in that sheet relative to the main sheet (sheets drawn bigger use < 1).
 // `alternates` are more idle sheets; the cat takes turns playing each one (main sheet first).
+// `startNow` skips the rest the first time, so the cat moves as soon as the refuge opens.
 // `portrait` is a still photo for places that should not animate (cat cards, welcome window).
 export type SpriteSheet={src:string;frames:number;width:number;height:number;seconds:number;rest?:number;restAtEnd?:boolean;pingPong?:boolean;scale?:number};
-export type CatSprite=SpriteSheet&{alternates?:SpriteSheet[];walk?:SpriteSheet;react?:SpriteSheet;portrait?:{src:string;width:number;height:number}};
+export type CatSprite=SpriteSheet&{startNow?:boolean;alternates?:SpriteSheet[];walk?:SpriteSheet;react?:SpriteSheet;portrait?:{src:string;width:number;height:number}};
 export const CAT_SPRITES:Record<string,CatSprite>={
- Milo:{src:'/art/cats/milo-peek.webp?v=2',frames:18,width:294,height:272,seconds:2.6,rest:4,
+ Milo:{src:'/art/cats/milo-peek.webp?v=2',frames:18,width:294,height:272,seconds:2.6,rest:4,startNow:true,
   // Takes turns with the box story (frames 4–24 of box_milo.png), which ends asleep in the box.
   alternates:[{src:'/art/cats/milo-box.webp',frames:21,width:316,height:255,seconds:3,rest:4,restAtEnd:true}],
   portrait:{src:'/art/cats/milo-portrait.webp',width:511,height:640}},

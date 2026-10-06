@@ -17,7 +17,7 @@ export function CatArt({cat,still=false}:{cat?:CatLook&{name?:string};still?:boo
   const keyframes=[spriteKeyframes(name,sprite),...alternates.map((sheet,i)=>spriteKeyframes(`${name}-alt${i}`,sheet)),walk&&spriteKeyframes(`${name}-walk`,walk),react&&spriteKeyframes(`${name}-react`,react)].filter(Boolean).join('');
   const width=(sheet:SpriteSheet)=>`${sheet.width*(sheet.scale??1)/sprite.width*100}%`;
   const seconds=(sheet:SpriteSheet)=>(sheet.rest??0)+sheet.seconds;
-  const idle=alternates.length?<SpriteRotation sheets={[{style:sheetStyle(sprite,name),seconds:seconds(sprite)},...alternates.map((sheet,i)=>({style:{...sheetStyle(sheet,`${name}-alt${i}`),width:width(sheet)},seconds:seconds(sheet)}))]}/>:<span className="cat-sprite idle" style={sheetStyle(sprite,name)}/>;
+  const idle=alternates.length?<SpriteRotation skip={sprite.startNow&&!sprite.restAtEnd?sprite.rest??0:0} sheets={[{style:sheetStyle(sprite,name),seconds:seconds(sprite)},...alternates.map((sheet,i)=>({style:{...sheetStyle(sheet,`${name}-alt${i}`),width:width(sheet)},seconds:seconds(sheet)}))]}/>:<span className="cat-sprite idle" style={sheetStyle(sprite,name)}/>;
   // The walk sheet is drawn at the same pixel scale as the idle one, so the cat keeps its size when it starts walking.
   return <div className="cat-art illustrated-cat sprite-cat" aria-hidden="true"><style href={`cat-sprite-${name}`} precedence="default">{keyframes}</style>{idle}{walk&&<span className="cat-sprite walk" style={{...sheetStyle(walk,`${name}-walk`),width:width(walk)}}/>}{react&&<span className="cat-sprite react" style={{...sheetStyle(react,`${name}-react`),width:width(react)}}/>}</div>;
  }
